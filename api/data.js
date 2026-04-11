@@ -25,9 +25,14 @@ export default async function handler(req, res) {
       } catch { return raw; }
     };
 
+    const health = unwrap(healthJson.result);
+    const workouts = unwrap(workoutsJson.result);
+
     res.status(200).json({
-      health: unwrap(healthJson.result),
-      workouts: unwrap(workoutsJson.result),
+      health,
+      workouts,
+      debug_health: typeof health === "string" ? health.slice(0, 500) : null,
+      debug_workouts: typeof workouts === "string" ? workouts.slice(0, 500) : null,
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
