@@ -1,3 +1,5 @@
+export const config = { api: { bodyParser: false } };
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -10,28 +12,25 @@ export default async function handler(req, res) {
   if (!kvUrl || !kvToken) return res.status(500).json({ error: "KV no configurado" });
 
   try {
-    let body = "";
-    if (typeof req.body === "string") {
-      body = req.body;
-    } else if (Buffer.isBuffer(req.body)) {
-      body = req.body.toString("utf8");
-    } else {
-      body = JSON.stringify(req.body);
-    }
+    const body = await new Promise((resolve, reject) => {
+      let data = "";
+      req.on("data", chunk => { data += chunk.toString(); });
+      req.on("end", () => resolve(data));
+      req.on("error", reject);
+    });
 
     const today = new Date().toISOString().slice(0, 10);
-    const payload = JSON.stringify(body);
 
     await fetch(`${kvUrl}/set/health:latest`, {
       method: "POST",
       headers: { Authorization: `Bearer ${kvToken}`, "Content-Type": "application/json" },
-      body: payload,
+      body: JSON.stringify({ value: body }),
     });
 
     await fetch(`${kvUrl}/set/health:${today}`, {
       method: "POST",
       headers: { Authorization: `Bearer ${kvToken}`, "Content-Type": "application/json" },
-      body: payload,
+      body: JSON.stringify({ value: body }),
     });
 
     res.status(200).json({ ok: true, date: today, bytes: body.length });
