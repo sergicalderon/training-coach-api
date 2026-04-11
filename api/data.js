@@ -17,9 +17,12 @@ export default async function handler(req, res) {
     const healthJson = await healthRes.json();
     const workoutsJson = await workoutsRes.json();
 
-    const unwrap = val => {
-      if (!val) return null;
-      try { return JSON.parse(val); } catch { return val; }
+    const unwrap = raw => {
+      if (!raw) return null;
+      try {
+        const parsed = JSON.parse(raw);
+        return parsed?.value ?? parsed;
+      } catch { return raw; }
     };
 
     res.status(200).json({
