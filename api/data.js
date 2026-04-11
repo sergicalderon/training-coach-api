@@ -10,20 +10,21 @@ export default async function handler(req, res) {
 
   try {
     const [healthRes, workoutsRes] = await Promise.all([
-      fetch(`${kvUrl}/get/health:latest`, {
-        headers: { Authorization: `Bearer ${kvToken}` }
-      }),
-      fetch(`${kvUrl}/get/workouts:latest`, {
-        headers: { Authorization: `Bearer ${kvToken}` }
-      }),
+      fetch(`${kvUrl}/get/health:latest`, { headers: { Authorization: `Bearer ${kvToken}` } }),
+      fetch(`${kvUrl}/get/workouts:latest`, { headers: { Authorization: `Bearer ${kvToken}` } }),
     ]);
 
     const healthJson = await healthRes.json();
     const workoutsJson = await workoutsRes.json();
 
+    const unwrap = val => {
+      if (!val) return null;
+      try { return JSON.parse(val); } catch { return val; }
+    };
+
     res.status(200).json({
-      health: healthJson.result ?? null,
-      workouts: workoutsJson.result ?? null,
+      health: unwrap(healthJson.result),
+      workouts: unwrap(workoutsJson.result),
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
