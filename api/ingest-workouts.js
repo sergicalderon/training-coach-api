@@ -10,22 +10,31 @@ export default async function handler(req, res) {
   if (!kvUrl || !kvToken) return res.status(500).json({ error: "KV no configurado" });
 
   try {
-    const body = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
-    const today = new Date().toISOString().slice(0, 10);
+    let body = "";
+    if (typeof req.body === "string") {
+      body = req.body;
+    } else if (Buffer.isBuffer(req.body)) {
+      body = req.body.toString("utf8");
+    } else {
+      body = JSON.stringify(req.body);
+    }
 
-    await fetch(`${kvUrl}/set/workouts:${today}`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${kvToken}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ value: body }),
-    });
+    const today = new Date().toISOString().slice(0, 10);
+    const payload = JSON.stringify(body);
 
     await fetch(`${kvUrl}/set/workouts:latest`, {
       method: "POST",
       headers: { Authorization: `Bearer ${kvToken}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ value: body }),
+      body: payload,
     });
 
-    res.status(200).json({ ok: true, date: today });
+    await fetch(`${kvUrl}/set/workouts:${today}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${kvToken}`, "Content-Type": "application/json" },
+      body: payload,
+    });
+
+    res.status(200).json({ ok: true, date: today, bytes: body.length });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
