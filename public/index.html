@@ -7,271 +7,381 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; color: #1a1a1a; min-height: 100vh; }
-    .container { max-width: 600px; margin: 0 auto; padding: 2rem 1rem; }
+    .container { max-width: 600px; margin: 0 auto; padding: 2rem 1rem 4rem; }
     h1 { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.25rem; }
     .subtitle { font-size: 0.85rem; color: #666; margin-bottom: 1.5rem; }
-    .section-label { font-size: 0.7rem; font-weight: 600; color: #999; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .label { font-size: 0.7rem; font-weight: 600; color: #999; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
     .box { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
     .box-header { display: flex; justify-content: space-between; align-items: center; }
     .box-title { font-weight: 500; font-size: 0.9rem; }
     .box-sub { font-size: 0.75rem; color: #888; margin-top: 2px; }
-    .btn { font-size: 0.75rem; padding: 5px 14px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; background: transparent; color: #1a1a1a; transition: background 0.15s; }
+    .btn { font-size: 0.75rem; padding: 5px 14px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; background: transparent; color: #1a1a1a; }
     .btn:hover { background: #f0f0f0; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn.success { background: #f0faf4; border-color: #86efac; color: #16a34a; }
-    .btn.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; font-size: 0.9rem; padding: 0.75rem; width: 100%; border-radius: 10px; margin-bottom: 1rem; }
-    .btn.primary:hover { background: #333; }
-    .btn.primary:disabled { background: #e5e5e5; color: #999; border-color: #e5e5e5; }
+    .btn-primary { width: 100%; padding: 0.75rem; border-radius: 10px; border: 1px solid #1a1a1a; background: #1a1a1a; color: #fff; font-size: 0.9rem; font-weight: 500; cursor: pointer; margin-bottom: 1rem; }
+    .btn-primary:hover { background: #333; }
+    .btn-primary:disabled { background: #e5e5e5; color: #999; border-color: #e5e5e5; cursor: not-allowed; }
+    .btn-server { width: 100%; padding: 0.65rem; border-radius: 10px; border: 1px solid #bfdbfe; background: #eff6ff; color: #1d4ed8; font-size: 0.85rem; font-weight: 500; cursor: pointer; margin-bottom: 0.5rem; }
+    .btn-server:hover { background: #dbeafe; }
+    .btn-server:disabled { opacity: 0.6; cursor: not-allowed; }
     .stats { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
     .stat { background: #f5f5f5; border-radius: 8px; padding: 0.6rem 0.75rem; flex: 1; min-width: 80px; }
-    .stat.highlight { background: #eff6ff; }
+    .stat.hl { background: #eff6ff; }
     .stat-label { font-size: 0.65rem; color: #888; margin-bottom: 2px; }
     .stat-value { font-size: 1.1rem; font-weight: 500; }
     .stat-unit { font-size: 0.65rem; color: #888; margin-left: 2px; }
-    .stat.highlight .stat-value { color: #1d4ed8; }
+    .stat.hl .stat-value { color: #1d4ed8; }
     .meta { font-size: 0.7rem; color: #aaa; margin-top: 8px; }
-    .activity { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-top: 1px solid #f0f0f0; font-size: 0.8rem; }
-    .activity-name { color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 55%; }
+    .activity { display: flex; justify-content: space-between; padding: 7px 0; border-top: 1px solid #f0f0f0; font-size: 0.8rem; }
+    .activity-name { color: #1a1a1a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%; }
     .activity-meta { color: #888; white-space: nowrap; }
-    .analysis { font-size: 0.875rem; line-height: 1.8; white-space: pre-wrap; color: #1a1a1a; }
     .error { font-size: 0.75rem; color: #dc2626; margin-top: 8px; }
+    .server-msg { font-size: 0.75rem; margin-bottom: 1rem; }
+    .server-msg.ok { color: #16a34a; }
+    .server-msg.err { color: #dc2626; }
+    .days { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .day-btn { padding: 4px 12px; border-radius: 8px; font-size: 0.75rem; border: 1px solid #ddd; cursor: pointer; background: transparent; color: #888; }
+    .day-btn.active { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; font-weight: 500; }
+    .section-title { font-size: 0.85rem; font-weight: 500; margin-bottom: 8px; }
+    textarea { width: 100%; font-size: 0.8rem; padding: 8px 10px; border-radius: 8px; border: 1px solid #e5e5e5; background: #f9f9f9; color: #1a1a1a; resize: vertical; min-height: 60px; font-family: inherit; }
+    .chat { max-height: 480px; overflow-y: auto; margin-bottom: 12px; }
+    .msg { display: flex; gap: 8px; margin-bottom: 12px; }
+    .msg.user { flex-direction: row-reverse; }
+    .avatar { width: 28px; height: 28px; border-radius: 50%; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #1d4ed8; font-weight: 500; flex-shrink: 0; }
+    .bubble { border-radius: 12px; padding: 0.6rem 0.875rem; font-size: 0.8rem; line-height: 1.7; white-space: pre-wrap; max-width: 85%; }
+    .bubble.assistant { background: #f5f5f5; color: #1a1a1a; }
+    .bubble.user { background: #eff6ff; color: #1d4ed8; }
+    .bubble.thinking { color: #aaa; }
+    .chat-input { display: flex; gap: 8px; border-top: 1px solid #f0f0f0; padding-top: 10px; }
+    .chat-input input { flex: 1; font-size: 0.8rem; padding: 7px 10px; border-radius: 8px; border: 1px solid #e5e5e5; background: #f9f9f9; color: #1a1a1a; font-family: inherit; }
+    .chat-input button { padding: 7px 14px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; background: transparent; }
     .empty { text-align: center; padding: 2rem 0; color: #aaa; font-size: 0.85rem; }
-    .regen { font-size: 0.75rem; padding: 4px 12px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; background: transparent; color: #888; margin-top: 10px; }
   </style>
 </head>
 <body>
 <div class="container">
   <h1>Entrenador personal IA</h1>
-  <p class="subtitle">Conecta tus datos de salud y entreno para obtener un plan adaptado.</p>
+  <p class="subtitle">Carga tus datos y obtén tu plan diario adaptado.</p>
 
-  <div class="section-label">Salud — Health Auto Export</div>
+  <button class="btn-server" id="btn-server" onclick="loadFromServer()">Cargar datos de hoy ↓</button>
+  <div id="server-msg" class="server-msg" style="display:none"></div>
+
+  <div class="label">Salud diaria</div>
   <div class="box">
     <div class="box-header">
-      <div>
-        <div class="box-title">CSV de salud</div>
-        <div class="box-sub">FC reposo, HRV, sueño, VO2Max...</div>
-      </div>
-      <label>
-        <input type="file" accept=".csv" id="csv-input" style="display:none" />
-        <span class="btn" id="csv-btn" onclick="document.getElementById('csv-input').click()">Subir CSV</span>
-      </label>
+      <div><div class="box-title">CSV de salud</div><div class="box-sub">HRV, FC reposo, sueño, VO2Max...</div></div>
+      <label><input type="file" accept=".csv" id="csv-health" style="display:none" onchange="handleHealth(this)"><span class="btn" id="btn-health">Subir CSV</span></label>
     </div>
     <div id="health-stats"></div>
-    <div class="error" id="csv-error"></div>
+    <div class="error" id="err-health"></div>
   </div>
 
-  <div class="section-label">Entrenos — Strava</div>
+  <div class="label">Entrenos</div>
   <div class="box">
     <div class="box-header">
-      <div>
-        <div class="box-title">Strava</div>
-        <div class="box-sub">Últimas 15 actividades</div>
+      <div><div class="box-title">CSV de entrenos</div><div class="box-sub">Workouts, distancia, FC, elevación...</div></div>
+      <label><input type="file" accept=".csv" id="csv-workouts" style="display:none" onchange="handleWorkouts(this)"><span class="btn" id="btn-workouts">Subir CSV</span></label>
+    </div>
+    <div id="workout-list"></div>
+    <div class="error" id="err-workouts"></div>
+  </div>
+
+  <div class="label">Esta semana</div>
+  <div class="box">
+    <div class="section-title">Días disponibles</div>
+    <div class="days" id="days-container"></div>
+    <div class="section-title">¿Cómo te encuentras?</div>
+    <div class="days" id="feeling-container"></div>
+    <div class="section-title">Objetivo principal</div>
+    <div class="days" id="goal-container"></div>
+    <div class="section-title" style="margin-top:4px">Notas adicionales</div>
+    <textarea id="notes" placeholder="Ej: viaje el jueves, dolor leve en rodilla..."></textarea>
+  </div>
+
+  <button class="btn-primary" id="btn-analyze" onclick="runAnalysis()" disabled>Generar plan semanal →</button>
+
+  <div id="chat-section" style="display:none">
+    <div class="label">Tu entrenador</div>
+    <div class="box" style="padding: 0.75rem 1rem">
+      <div class="chat" id="chat"></div>
+      <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="Pregunta a tu entrenador..." onkeydown="if(event.key==='Enter')sendMessage()" />
+        <button onclick="sendMessage()">↑</button>
       </div>
-      <button class="btn" id="strava-btn" onclick="connectStrava()">Conectar ↗</button>
-    </div>
-    <div id="strava-list"></div>
-    <div class="error" id="strava-error"></div>
-  </div>
-
-  <button class="btn primary" id="analyze-btn" onclick="runAnalysis()" disabled>Analizar y generar plan semanal →</button>
-
-  <div id="analysis-section" style="display:none">
-    <div class="section-label">Análisis y plan semanal</div>
-    <div class="box">
-      <div class="analysis" id="analysis-text"></div>
-      <button class="regen" onclick="runAnalysis()">Regenerar</button>
     </div>
   </div>
 
-  <div class="empty" id="empty-msg">Sube el CSV o conecta Strava para empezar</div>
+  <div class="empty" id="empty-msg">Pulsa "Cargar datos de hoy" o sube los CSVs manualmente</div>
 </div>
 
 <script>
-let healthData = null;
-let activities = [];
+const WORKOUT_NAMES = {
+  "Outdoor Run":"Carrera exterior","Indoor Run":"Carrera interior",
+  "Exterior Ejecutar":"Carrera exterior","Interior Ejecutar":"Carrera interior",
+  "Ejecutar":"Carrera","Trail Run":"Trail running","Outdoor Walk":"Caminata exterior",
+  "Exterior Caminar":"Caminata exterior","Interior Caminar":"Caminata interior",
+  "Functional Strength Training":"Fuerza funcional","Entrenamiento de Fuerza Funcional":"Fuerza funcional",
+  "Traditional Strength Training":"Fuerza tradicional","Entrenamiento de Fuerza Tradicional":"Fuerza tradicional",
+  "High Intensity Interval Training":"HIIT","Core Training":"Core","Hiking":"Senderismo",
+  "Cycling":"Ciclismo","Swimming":"Natación","Other":"Otro"
+};
+const fixName = n => WORKOUT_NAMES[n] || n;
 
-function parseCSV(text) {
+let healthData = null, workoutsData = null;
+let systemPrompt = null, chatHistory = [];
+let diasSel = [], feelingSel = "", goalSel = "";
+
+const DIAS = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+const FEELINGS = ["Muy bien","Bien","Normal","Cansado","Muy cansado"];
+const GOALS = ["Recuperar","Mantener","Progresar","Carga alta","Competición próxima"];
+
+function initButtons() {
+  const dc = document.getElementById("days-container");
+  DIAS.forEach(d => { const b = document.createElement("button"); b.className="day-btn"; b.textContent=d; b.onclick=()=>{ diasSel.includes(d)?diasSel=diasSel.filter(x=>x!==d):diasSel.push(d); dc.querySelectorAll("button").forEach((btn,i)=>btn.classList.toggle("active",diasSel.includes(DIAS[i]))); }; dc.appendChild(b); });
+  const fc = document.getElementById("feeling-container");
+  FEELINGS.forEach(f => { const b = document.createElement("button"); b.className="day-btn"; b.textContent=f; b.onclick=()=>{ feelingSel=f; fc.querySelectorAll("button").forEach(btn=>btn.classList.toggle("active",btn.textContent===f)); }; fc.appendChild(b); });
+  const gc = document.getElementById("goal-container");
+  GOALS.forEach(g => { const b = document.createElement("button"); b.className="day-btn"; b.textContent=g; b.onclick=()=>{ goalSel=g; gc.querySelectorAll("button").forEach(btn=>btn.classList.toggle("active",btn.textContent===g)); }; gc.appendChild(b); });
+}
+
+function parseHealthCSV(text) {
   const lines = text.trim().split("\n");
-  const headers = lines[0].split(",").map(h => h.trim().replace(/"/g, ""));
-  const rows = lines.slice(1).map(line => {
-    const vals = line.split(",").map(v => v.trim().replace(/"/g, ""));
-    const obj = {};
-    headers.forEach((h, i) => obj[h] = vals[i]);
-    return obj;
-  }).filter(r => r[headers[0]]);
-
-  const col = name => rows.map(r => parseFloat(r[name])).filter(v => !isNaN(v) && v > 0);
-  const avg = arr => arr.length ? arr.reduce((s,v) => s+v,0)/arr.length : null;
+  const headers = lines[0].split(",").map(h=>h.trim().replace(/"/g,""));
+  const rows = lines.slice(1).map(line=>{ const vals=line.split(",").map(v=>v.trim().replace(/"/g,"")); const obj={}; headers.forEach((h,i)=>obj[h]=vals[i]); return obj; }).filter(r=>r[headers[0]]);
+  const col = name => rows.map(r=>parseFloat(r[name])).filter(v=>!isNaN(v)&&v>0);
+  const avg = arr => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : null;
   const last = arr => arr.length ? arr[arr.length-1] : null;
   const h = name => ({ avg: avg(col(name))?.toFixed(1), last: last(col(name))?.toFixed(1) });
-
   return {
     hrResting: h("Frecuencia Cardiaca en Reposo (count/min)"),
     hrv: h("Variabilidad de Frecuencia Cardíaca (ms)"),
     spo2: h("Saturación de Oxígeno en Sangre (%)"),
     vo2max: h("VO2 Máx (ml/(kg·min))"),
-    weight: h("Peso (kg)"),
-    fatPct: h("Porcentaje de grasa corporal (%)"),
-    sleep: {
-      total: avg(col("Análisis del Sueño [Total] (hr)"))?.toFixed(1),
-      deep: avg(col("Análisis del Sueño [Profundo] (hr)"))?.toFixed(1),
-      rem: avg(col("Análisis del Sueño [REM] (hr)"))?.toFixed(1),
-    },
+    weight: h("Peso (kg)"), fatPct: h("Porcentaje de grasa corporal (%)"),
+    leanMass: h("Masa Corporal Magra (kg)"),
+    sleep: { total: avg(col("Análisis del Sueño [Total] (hr)"))?.toFixed(1), deep: avg(col("Análisis del Sueño [Profundo] (hr)"))?.toFixed(1), rem: avg(col("Análisis del Sueño [REM] (hr)"))?.toFixed(1) },
     cardioRecovery: h("Recuperación Cardio (count/min)"),
     rowCount: rows.length,
-    dateRange: rows.length ? `${rows[0][headers[0]]?.slice(0,10)} → ${rows[rows.length-1][headers[0]]?.slice(0,10)}` : null,
+    dateRange: rows.length ? rows[0][headers[0]]?.slice(0,10)+" → "+rows[rows.length-1][headers[0]]?.slice(0,10) : null
   };
 }
 
-function stat(label, value, unit, highlight) {
-  return `<div class="stat${highlight?' highlight':''}">
-    <div class="stat-label">${label}</div>
-    <div class="stat-value">${value ?? '—'}<span class="stat-unit">${value ? unit : ''}</span></div>
-  </div>`;
+function parseWorkoutsCSV(text) {
+  const lines = text.trim().split("\n");
+  const headers = lines[0].split(",").map(h=>h.trim().replace(/"/g,""));
+  const rows = lines.slice(1).map(line=>{ const vals=line.split(",").map(v=>v.trim().replace(/"/g,"")); const obj={}; headers.forEach((h,i)=>obj[h]=vals[i]); return obj; }).filter(r=>r[headers[0]]);
+  return rows.map(r=>({
+    type: fixName(r["Workout Type"]||"—"),
+    start: r["Start"]?.slice(0,10)||"—",
+    duration: parseFloat(r["Duration"])||0,
+    distance: parseFloat(r["Distancia (km)"])||0,
+    hrAvg: parseFloat(r["Frecuencia Cardíaca Promedio (count/min)"])||null,
+    hrMax: parseFloat(r["Frecuencia Cardíaca Máxima (count/min)"])||null,
+    elevGain: parseFloat(r["Elevación Ascendida (m)"])||0,
+  })).slice(0,20);
 }
 
-document.getElementById('csv-input').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  document.getElementById('csv-error').textContent = '';
-  document.getElementById('csv-btn').textContent = 'Cargando...';
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      healthData = parseCSV(ev.target.result);
-      document.getElementById('csv-btn').className = 'btn success';
-      document.getElementById('csv-btn').textContent = '✓ Cargado';
-      document.getElementById('health-stats').innerHTML = `
-        <div class="stats">
-          ${stat('FC reposo', healthData.hrResting.last, 'bpm')}
-          ${stat('HRV', healthData.hrv.last, 'ms', true)}
-          ${stat('VO2Max', healthData.vo2max.last, 'ml/kg/min', true)}
-        </div>
-        <div class="stats">
-          ${stat('Peso', healthData.weight.last, 'kg')}
-          ${stat('Grasa', healthData.fatPct.last, '%')}
-          ${stat('Sueño', healthData.sleep.total, 'h')}
-        </div>
-        <div class="meta">${healthData.dateRange} · ${healthData.rowCount} días</div>`;
-      updateState();
-    } catch {
-      document.getElementById('csv-error').textContent = 'Error al parsear el CSV.';
-      document.getElementById('csv-btn').textContent = 'Subir CSV';
-    }
-  };
-  reader.readAsText(file);
-});
+function renderHealth(d) {
+  document.getElementById("health-stats").innerHTML = `
+    <div class="stats">
+      <div class="stat"><div class="stat-label">FC reposo</div><div class="stat-value">${d.hrResting.last??'—'}<span class="stat-unit">bpm</span></div></div>
+      <div class="stat hl"><div class="stat-label">HRV</div><div class="stat-value">${d.hrv.last??'—'}<span class="stat-unit">ms</span></div></div>
+      <div class="stat hl"><div class="stat-label">VO2Max</div><div class="stat-value">${d.vo2max.last??'—'}<span class="stat-unit">ml/kg/min</span></div></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Peso</div><div class="stat-value">${d.weight.last??'—'}<span class="stat-unit">kg</span></div></div>
+      <div class="stat"><div class="stat-label">Grasa</div><div class="stat-value">${d.fatPct.last??'—'}<span class="stat-unit">%</span></div></div>
+      <div class="stat"><div class="stat-label">Sueño</div><div class="stat-value">${d.sleep.total??'—'}<span class="stat-unit">h</span></div></div>
+    </div>
+    <div class="meta">${d.dateRange??''} · ${d.rowCount} días</div>`;
+}
 
-async function connectStrava() {
-  const btn = document.getElementById('strava-btn');
-  const err = document.getElementById('strava-error');
-  btn.textContent = 'Conectando...';
-  btn.disabled = true;
-  err.textContent = '';
+function renderWorkouts(list) {
+  document.getElementById("workout-list").innerHTML = list.slice(0,5).map(w=>
+    `<div class="activity"><div class="activity-name">${w.start} · ${w.type}</div><div class="activity-meta">${w.distance>0?w.distance.toFixed(1)+'km · ':''}${w.duration>0?Math.round(w.duration/60)+'min':''}${w.hrAvg?' · '+w.hrAvg+'bpm':''}</div></div>`
+  ).join('') + `<div class="meta">${list.length} entrenos cargados</div>`;
+}
+
+function handleHealth(input) {
+  const file = input.files[0]; if (!file) return;
+  document.getElementById("err-health").textContent = "";
+  document.getElementById("btn-health").textContent = "Cargando...";
+  const r = new FileReader();
+  r.onload = ev => {
+    try { healthData = parseHealthCSV(ev.target.result); renderHealth(healthData); document.getElementById("btn-health").className="btn success"; document.getElementById("btn-health").textContent="✓ Cargado"; updateState(); }
+    catch { document.getElementById("err-health").textContent="Error al parsear CSV de salud."; document.getElementById("btn-health").textContent="Subir CSV"; }
+  };
+  r.readAsText(file);
+}
+
+function handleWorkouts(input) {
+  const file = input.files[0]; if (!file) return;
+  document.getElementById("err-workouts").textContent = "";
+  document.getElementById("btn-workouts").textContent = "Cargando...";
+  const r = new FileReader();
+  r.onload = ev => {
+    try { workoutsData = parseWorkoutsCSV(ev.target.result); renderWorkouts(workoutsData); document.getElementById("btn-workouts").className="btn success"; document.getElementById("btn-workouts").textContent="✓ Cargado"; updateState(); }
+    catch { document.getElementById("err-workouts").textContent="Error al parsear CSV de entrenos."; document.getElementById("btn-workouts").textContent="Subir CSV"; }
+  };
+  r.readAsText(file);
+}
+
+async function loadFromServer() {
+  const btn = document.getElementById("btn-server");
+  const msg = document.getElementById("server-msg");
+  btn.disabled = true; btn.textContent = "Cargando...";
+  msg.style.display = "none";
   try {
-    const res = await fetch('/api/strava');
+    const res = await fetch("/api/data");
     const data = await res.json();
-    if (Array.isArray(data)) {
-      activities = data;
-      btn.className = 'btn success';
-      btn.textContent = '✓ Conectado';
-      const html = data.slice(0,6).map(a => {
-        const dist = (a.distance/1000).toFixed(1);
-        const mins = Math.round(a.moving_time/60);
-        const hr = a.average_heartrate ? ` · ${Math.round(a.average_heartrate)}bpm` : '';
-        return `<div class="activity">
-          <div class="activity-name">${a.start_date?.slice(0,10)} · ${a.name}</div>
-          <div class="activity-meta">${dist}km · ${mins}min${hr}</div>
-        </div>`;
-      }).join('');
-      document.getElementById('strava-list').innerHTML = html;
-      updateState();
-    } else {
-      err.textContent = 'Error: ' + (data.message || 'Token inválido');
-      btn.textContent = 'Reintentar';
-      btn.disabled = false;
+    const loaded = [];
+    if (data.health && data.health !== "{}" && data.health.length > 50) {
+      try { healthData = parseHealthCSV(data.health); renderHealth(healthData); document.getElementById("btn-health").className="btn success"; document.getElementById("btn-health").textContent="✓ Cargado"; loaded.push("salud"); } catch(e) {}
     }
+    if (data.workouts && data.workouts !== "{}" && data.workouts.length > 50) {
+      try { workoutsData = parseWorkoutsCSV(data.workouts); renderWorkouts(workoutsData); document.getElementById("btn-workouts").className="btn success"; document.getElementById("btn-workouts").textContent="✓ Cargado"; loaded.push("entrenos"); } catch(e) {}
+    }
+    msg.textContent = loaded.length > 0 ? "✓ Datos cargados: " + loaded.join(" y ") : "No hay datos nuevos en el servidor aún";
+    msg.className = "server-msg " + (loaded.length > 0 ? "ok" : "err");
+    msg.style.display = "block";
+    updateState();
   } catch(e) {
-    err.textContent = 'Error de conexión: ' + e.message;
-    btn.textContent = 'Reintentar';
-    btn.disabled = false;
+    msg.textContent = "Error: " + e.message;
+    msg.className = "server-msg err";
+    msg.style.display = "block";
   }
+  btn.disabled = false;
+  btn.textContent = "Cargar datos de hoy ↓";
 }
 
 function updateState() {
-  const hasData = healthData || activities.length > 0;
-  document.getElementById('analyze-btn').disabled = !hasData;
-  document.getElementById('empty-msg').style.display = hasData ? 'none' : 'block';
+  const hasData = healthData || workoutsData;
+  document.getElementById("btn-analyze").disabled = !hasData;
+  document.getElementById("empty-msg").style.display = hasData ? "none" : "block";
+}
+
+function buildSystemPrompt() {
+  const acts = (workoutsData||[]).slice(0,10).map(w => {
+    const pace = w.distance>0&&w.duration>0 ? (w.duration/60/w.distance).toFixed(1)+"min/km" : "";
+    return `- ${w.start} | ${w.type} | ${w.distance>0?w.distance.toFixed(1)+"km":""} | ${w.duration>0?Math.round(w.duration/60)+"min":""} | ${w.hrAvg?w.hrAvg+"bpm avg":""} | ${w.elevGain>0?"+"+w.elevGain.toFixed(0)+"m":""} | ${pace}`;
+  }).join("\n") || "No disponible";
+
+  return `Eres el entrenador personal de Sergio. Hablas en español, directo y práctico.
+
+DATOS DE SALUD (${healthData?.dateRange??'—'}):
+- FC reposo: ${healthData?.hrResting.last??'—'} bpm (media ${healthData?.hrResting.avg??'—'})
+- HRV: ${healthData?.hrv.last??'—'} ms (media ${healthData?.hrv.avg??'—'})
+- SatO2: ${healthData?.spo2.last??'—'}%
+- VO2Max: ${healthData?.vo2max.last??'—'} ml/kg/min
+- Peso: ${healthData?.weight.last??'—'} kg | Grasa: ${healthData?.fatPct.last??'—'}%
+- Sueño: ${healthData?.sleep.total??'—'}h total | ${healthData?.sleep.deep??'—'}h profundo | ${healthData?.sleep.rem??'—'}h REM
+- Recuperación cardio: ${healthData?.cardioRecovery.last??'—'} bpm
+
+ENTRENOS RECIENTES:
+${acts}
+
+OBJETIVOS SEMANA:
+- Días disponibles: ${diasSel.length>0?diasSel.join(", "):"no especificado"}
+- Sensación: ${feelingSel||"no especificada"}
+- Objetivo: ${goalSel||"no especificado"}
+- Notas: ${document.getElementById("notes").value||"ninguna"}
+
+PERFIL:
+- Sergio, 44 años, 164cm, ~68kg, FC reposo ~50bpm
+- Objetivos: medio maratón asfalto 9 nov 2025 + Camino de Santiago Burgos→Santiago ~600km oct 2025
+- Entrenos mañana en ayunas, fuerza tardes ~16:30h
+- Calzado minimalista zero-drop
+- Gym en casa: rack, barra, kettlebells 12/16kg, mancuernas hasta 20kg, caja de salto`;
+}
+
+function addMessage(role, content, thinking=false) {
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.className = "msg " + role;
+  div.id = thinking ? "thinking-msg" : "";
+  if (role === "assistant") {
+    div.innerHTML = `<div class="avatar">E</div><div class="bubble assistant${thinking?' thinking':''}">${thinking?'Pensando...':content}</div>`;
+  } else {
+    div.innerHTML = `<div class="bubble user">${content}</div>`;
+  }
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
 }
 
 async function runAnalysis() {
-  const btn = document.getElementById('analyze-btn');
-  btn.textContent = 'Analizando...';
-  btn.disabled = true;
-  document.getElementById('analysis-section').style.display = 'none';
+  systemPrompt = buildSystemPrompt();
+  chatHistory = [];
+  document.getElementById("chat").innerHTML = "";
+  document.getElementById("chat-section").style.display = "block";
+  document.getElementById("btn-analyze").disabled = true;
+  document.getElementById("btn-analyze").textContent = "Analizando...";
 
-  const acts = activities.slice(0,8).map(a => {
-    const dist = (a.distance/1000).toFixed(1);
-    const mins = Math.round(a.moving_time/60);
-    const hr = a.average_heartrate ? `${Math.round(a.average_heartrate)}bpm` : '';
-    const elev = a.total_elevation_gain ? `+${Math.round(a.total_elevation_gain)}m` : '';
-    return `- ${a.start_date?.slice(0,10)} | ${a.sport_type} | ${dist}km | ${mins}min | ${hr} | ${elev} | "${a.name}"`;
-  }).join('\n') || 'No disponible';
-
-  const prompt = `Eres un entrenador personal experto en running y trail running. Responde en español.
-
-Analiza los datos y responde con estas 4 secciones:
+  const initPrompt = `Analiza mis datos y genera mi plan para esta semana con estas 4 secciones:
 
 **ESTADO DE FORMA**
 (2-3 frases integrando salud y entrenos recientes)
 
 **RECUPERACIÓN**
-Nivel: Alto / Medio / Bajo
-(justificación breve basada en HRV, FC reposo y carga reciente)
+Nivel: Alto / Medio / Bajo + justificación breve
 
 **PLAN PRÓXIMOS 7 DÍAS**
-(4-5 sesiones concretas: tipo, distancia/duración, zona FC, objetivo)
+(sesiones concretas para los días disponibles: tipo, distancia/duración, zona FC, objetivo)
 
 **CONSEJO CLAVE**
-(1 consejo específico y accionable)
+(1 consejo específico y accionable)`;
 
----
-DATOS DE SALUD:
-- FC reposo: ${healthData?.hrResting.last ?? '—'} bpm (media ${healthData?.hrResting.avg ?? '—'})
-- HRV: ${healthData?.hrv.last ?? '—'} ms (media ${healthData?.hrv.avg ?? '—'})
-- SatO2: ${healthData?.spo2.last ?? '—'}%
-- VO2Max: ${healthData?.vo2max.last ?? '—'} ml/kg/min
-- Peso: ${healthData?.weight.last ?? '—'} kg | Grasa: ${healthData?.fatPct.last ?? '—'}%
-- Sueño: ${healthData?.sleep.total ?? '—'}h total | ${healthData?.sleep.deep ?? '—'}h profundo | ${healthData?.sleep.rem ?? '—'}h REM
-- Recuperación cardio: ${healthData?.cardioRecovery.last ?? '—'} bpm
-- Periodo: ${healthData?.dateRange ?? '—'}
+  addMessage("thinking-placeholder", "", true);
+  try {
+    const reply = await callClaude([{ role:"user", content: systemPrompt+"\n\n"+initPrompt }]);
+    document.getElementById("thinking-msg")?.remove();
+    chatHistory.push({ role:"assistant", content: reply });
+    addMessage("assistant", reply);
+  } catch(e) {
+    document.getElementById("thinking-msg")?.remove();
+    addMessage("assistant", "Error: "+e.message);
+  }
+  document.getElementById("btn-analyze").disabled = false;
+  document.getElementById("btn-analyze").textContent = "Regenerar plan →";
+}
 
-ACTIVIDADES STRAVA:
-${acts}
+async function sendMessage() {
+  const input = document.getElementById("chat-input");
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = "";
+  addMessage("user", text);
+  chatHistory.push({ role:"user", content: text });
+  addMessage("thinking-placeholder", "", true);
 
-PERFIL:
-- Sergio, 44 años, 164cm, FC reposo habitual ~50bpm
-- Objetivos: medio maratón asfalto 9 nov 2025 + Camino de Santiago Burgos→Santiago ~600km oct 2025
-- Entrenos mañana en ayunas, fuerza tardes ~16:30h
-- Calzado minimalista zero-drop`;
+  const msgs = [
+    { role:"user", content: systemPrompt+"\n\nEres mi entrenador. Responde en español, directo y práctico." },
+    ...chatHistory.filter(m => m.role !== "thinking-placeholder")
+  ];
 
   try {
-    const res = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt })
-    });
-    const data = await res.json();
-    document.getElementById('analysis-text').textContent = data.text || 'Sin respuesta';
-    document.getElementById('analysis-section').style.display = 'block';
+    const reply = await callClaude(msgs);
+    document.getElementById("thinking-msg")?.remove();
+    chatHistory.push({ role:"assistant", content: reply });
+    addMessage("assistant", reply);
   } catch(e) {
-    document.getElementById('analysis-text').textContent = 'Error al analizar: ' + e.message;
-    document.getElementById('analysis-section').style.display = 'block';
+    document.getElementById("thinking-msg")?.remove();
+    addMessage("assistant", "Error: "+e.message);
   }
-
-  btn.textContent = 'Analizar y generar plan semanal →';
-  btn.disabled = false;
 }
+
+async function callClaude(messages) {
+  const res = await fetch("/api/analyze", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt: messages[messages.length-1].content, messages })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.text;
+}
+
+initButtons();
 </script>
 </body>
 </html>
