@@ -171,14 +171,23 @@ function parseWorkoutsCSV(text) {
   const headers = lines[0].split(",").map(h=>h.trim().replace(/"/g,""));
   const rows = lines.slice(1).map(line=>{ const vals=line.split(",").map(v=>v.trim().replace(/"/g,"")); const obj={}; headers.forEach((h,i)=>obj[h]=vals[i]); return obj; }).filter(r=>r[headers[0]]);
   return rows.map(r=>({
-    type: fixName(r["Workout Type"]||"—"),
-    start: r["Start"]?.slice(0,10)||"—",
-    duration: parseFloat(r["Duration"])||0,
-    distance: parseFloat(r["Distancia (km)"])||0,
-    hrAvg: parseFloat(r["Frecuencia Cardíaca Promedio (count/min)"])||null,
-    hrMax: parseFloat(r["Frecuencia Cardíaca Máxima (count/min)"])||null,
-    elevGain: parseFloat(r["Elevación Ascendida (m)"])||0,
+    type: fixName(r["Type"]||r["Workout Type"]||"—"),
+    start: (r["Start"]||"—").slice(0,10),
+    duration: parseDuration(r["Duration"]),
+    distance: parseFloat(r["Distance (km)"]||r["Distancia (km)"])||0,
+    hrAvg: parseFloat(r["Avg Heart Rate (bpm)"]||r["Frecuencia Cardíaca Promedio (count/min)"])||null,
+    hrMax: parseFloat(r["Max Heart Rate (bpm)"]||r["Frecuencia Cardíaca Máxima (count/min)"])||null,
+    elevGain: parseFloat(r["Elevation Ascended (m)"]||r["Elevación Ascendida (m)"])||0,
+    calories: parseFloat(r["Active Energy (kJ)"]||r["Energía Activa (kJ)"])?Math.round(parseFloat(r["Active Energy (kJ)"]||r["Energía Activa (kJ)"])/4.184):null,
   })).slice(0,20);
+}
+
+function parseDuration(str) {
+  if (!str) return 0;
+  const p = str.split(":").map(Number);
+  if (p.length === 3) return p[0]*3600 + p[1]*60 + p[2];
+  if (p.length === 2) return p[0]*60 + p[1];
+  return parseFloat(str)||0;
 }
 
 function renderHealth(d) {
