@@ -18,9 +18,11 @@
     .btn { font-size: 0.75rem; padding: 5px 14px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; background: transparent; color: #1a1a1a; }
     .btn:hover { background: #f0f0f0; }
     .btn.success { background: #f0faf4; border-color: #86efac; color: #16a34a; }
-    .btn-primary { width: 100%; padding: 0.75rem; border-radius: 10px; border: 1px solid #1a1a1a; background: #1a1a1a; color: #fff; font-size: 0.9rem; font-weight: 500; cursor: pointer; margin-bottom: 1rem; }
+    .btn-primary { width: 100%; padding: 0.75rem; border-radius: 10px; border: 1px solid #1a1a1a; background: #1a1a1a; color: #fff; font-size: 0.9rem; font-weight: 500; cursor: pointer; margin-bottom: 0.75rem; }
     .btn-primary:hover { background: #333; }
     .btn-primary:disabled { background: #e5e5e5; color: #999; border-color: #e5e5e5; cursor: not-allowed; }
+    .btn-secondary { width: 100%; padding: 0.65rem; border-radius: 10px; border: 1px solid #e5e5e5; background: #fff; color: #1a1a1a; font-size: 0.85rem; font-weight: 500; cursor: pointer; margin-bottom: 0.75rem; }
+    .btn-secondary:hover { background: #f5f5f5; }
     .btn-server { width: 100%; padding: 0.65rem; border-radius: 10px; border: 1px solid #bfdbfe; background: #eff6ff; color: #1d4ed8; font-size: 0.85rem; font-weight: 500; cursor: pointer; margin-bottom: 0.5rem; }
     .btn-server:hover { background: #dbeafe; }
     .btn-server:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -44,7 +46,10 @@
     .day-btn.active { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; font-weight: 500; }
     .section-title { font-size: 0.85rem; font-weight: 500; margin-bottom: 8px; }
     textarea { width: 100%; font-size: 0.8rem; padding: 8px 10px; border-radius: 8px; border: 1px solid #e5e5e5; background: #f9f9f9; color: #1a1a1a; resize: vertical; min-height: 60px; font-family: inherit; }
-    .chat { max-height: 480px; overflow-y: auto; margin-bottom: 12px; }
+    .plan-box { background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 10px; padding: 0.875rem 1rem; margin-bottom: 1rem; font-size: 0.8rem; line-height: 1.7; white-space: pre-wrap; color: #1a1a1a; }
+    .plan-meta { font-size: 0.7rem; color: #aaa; margin-top: 6px; }
+    .plan-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .chat { max-height: 500px; overflow-y: auto; margin-bottom: 12px; }
     .msg { display: flex; gap: 8px; margin-bottom: 12px; }
     .msg.user { flex-direction: row-reverse; }
     .avatar { width: 28px; height: 28px; border-radius: 50%; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #1d4ed8; font-weight: 500; flex-shrink: 0; }
@@ -56,6 +61,9 @@
     .chat-input input { flex: 1; font-size: 0.8rem; padding: 7px 10px; border-radius: 8px; border: 1px solid #e5e5e5; background: #f9f9f9; color: #1a1a1a; font-family: inherit; }
     .chat-input button { padding: 7px 14px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; background: transparent; }
     .empty { text-align: center; padding: 2rem 0; color: #aaa; font-size: 0.85rem; }
+    .badge { display: inline-block; font-size: 0.65rem; padding: 2px 8px; border-radius: 20px; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; margin-left: 8px; vertical-align: middle; }
+    .badge.saved { background: #f0faf4; color: #16a34a; border-color: #86efac; }
+    .divider { border: none; border-top: 1px solid #f0f0f0; margin: 1rem 0; }
   </style>
 </head>
 <body>
@@ -86,19 +94,34 @@
     <div class="error" id="err-workouts"></div>
   </div>
 
-  <div class="label">Esta semana</div>
-  <div class="box">
-    <div class="section-title">Días disponibles</div>
-    <div class="days" id="days-container"></div>
-    <div class="section-title">¿Cómo te encuentras?</div>
-    <div class="days" id="feeling-container"></div>
-    <div class="section-title">Objetivo principal</div>
-    <div class="days" id="goal-container"></div>
-    <div class="section-title" style="margin-top:4px">Notas adicionales</div>
-    <textarea id="notes" placeholder="Ej: viaje el jueves, dolor leve en rodilla..."></textarea>
+  <div id="plan-section" style="display:none">
+    <div class="label">Plan de la semana <span class="badge saved" id="plan-badge">Guardado</span></div>
+    <div class="plan-box" id="plan-text"></div>
+    <div class="plan-meta" id="plan-meta"></div>
+    <div class="plan-actions">
+      <button class="btn" onclick="showNewPlanForm()">Cambiar plan ↺</button>
+    </div>
+    <hr class="divider">
   </div>
 
-  <button class="btn-primary" id="btn-analyze" onclick="runAnalysis()" disabled>Generar plan semanal →</button>
+  <div id="new-plan-form">
+    <div class="label">Esta semana</div>
+    <div class="box">
+      <div class="section-title">Días disponibles</div>
+      <div class="days" id="days-container"></div>
+      <div class="section-title">¿Cómo te encuentras?</div>
+      <div class="days" id="feeling-container"></div>
+      <div class="section-title">Objetivo principal</div>
+      <div class="days" id="goal-container"></div>
+      <div class="section-title" style="margin-top:4px">Notas adicionales</div>
+      <textarea id="notes" placeholder="Ej: viaje el jueves, dolor leve en rodilla..."></textarea>
+    </div>
+    <button class="btn-primary" id="btn-analyze" onclick="runAnalysis()" disabled>Generar plan semanal →</button>
+  </div>
+
+  <div id="daily-check-section" style="display:none">
+    <button class="btn-secondary" id="btn-daily" onclick="runDailyCheck()">Ver análisis de hoy →</button>
+  </div>
 
   <div id="chat-section" style="display:none">
     <div class="label">Tu entrenador</div>
@@ -130,6 +153,7 @@ const fixName = n => WORKOUT_NAMES[n] || n;
 let healthData = null, workoutsData = null;
 let systemPrompt = null, chatHistory = [];
 let diasSel = [], feelingSel = "", goalSel = "";
+let savedPlan = null;
 
 const DIAS = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
 const FEELINGS = ["Muy bien","Bien","Normal","Cansado","Muy cansado"];
@@ -142,6 +166,14 @@ function initButtons() {
   FEELINGS.forEach(f => { const b = document.createElement("button"); b.className="day-btn"; b.textContent=f; b.onclick=()=>{ feelingSel=f; fc.querySelectorAll("button").forEach(btn=>btn.classList.toggle("active",btn.textContent===f)); }; fc.appendChild(b); });
   const gc = document.getElementById("goal-container");
   GOALS.forEach(g => { const b = document.createElement("button"); b.className="day-btn"; b.textContent=g; b.onclick=()=>{ goalSel=g; gc.querySelectorAll("button").forEach(btn=>btn.classList.toggle("active",btn.textContent===g)); }; gc.appendChild(b); });
+}
+
+function parseDuration(str) {
+  if (!str) return 0;
+  const p = str.split(":").map(Number);
+  if (p.length === 3) return p[0]*3600 + p[1]*60 + p[2];
+  if (p.length === 2) return p[0]*60 + p[1];
+  return parseFloat(str)||0;
 }
 
 function parseHealthCSV(text) {
@@ -159,10 +191,14 @@ function parseHealthCSV(text) {
     vo2max: h("VO2 Máx (ml/(kg·min))"),
     weight: h("Peso (kg)"), fatPct: h("Porcentaje de grasa corporal (%)"),
     leanMass: h("Masa Corporal Magra (kg)"),
-    sleep: { total: avg(col("Análisis del Sueño [Total] (hr)"))?.toFixed(1), deep: avg(col("Análisis del Sueño [Profundo] (hr)"))?.toFixed(1), rem: avg(col("Análisis del Sueño [REM] (hr)"))?.toFixed(1) },
+    sleep: {
+      total: avg(col("Análisis del Sueño [Total] (hr)"))?.toFixed(1),
+      deep: avg(col("Análisis del Sueño [Profundo] (hr)"))?.toFixed(1),
+      rem: avg(col("Análisis del Sueño [REM] (hr)"))?.toFixed(1),
+    },
     cardioRecovery: h("Recuperación Cardio (count/min)"),
     rowCount: rows.length,
-    dateRange: rows.length ? rows[0][headers[0]]?.slice(0,10)+" → "+rows[rows.length-1][headers[0]]?.slice(0,10) : null
+    dateRange: rows.length ? rows[0][headers[0]]?.slice(0,10)+" → "+rows[rows.length-1][headers[0]]?.slice(0,10) : null,
   };
 }
 
@@ -182,14 +218,6 @@ function parseWorkoutsCSV(text) {
   })).slice(0,20);
 }
 
-function parseDuration(str) {
-  if (!str) return 0;
-  const p = str.split(":").map(Number);
-  if (p.length === 3) return p[0]*3600 + p[1]*60 + p[2];
-  if (p.length === 2) return p[0]*60 + p[1];
-  return parseFloat(str)||0;
-}
-
 function renderHealth(d) {
   document.getElementById("health-stats").innerHTML = `
     <div class="stats">
@@ -202,13 +230,27 @@ function renderHealth(d) {
       <div class="stat"><div class="stat-label">Grasa</div><div class="stat-value">${d.fatPct.last??'—'}<span class="stat-unit">%</span></div></div>
       <div class="stat"><div class="stat-label">Sueño</div><div class="stat-value">${d.sleep.total??'—'}<span class="stat-unit">h</span></div></div>
     </div>
-    <div class="meta">${d.dateRange??''} · ${d.rowCount} días</div>`;
+    <div class="meta">${d.dateRange??''} · ${d.rowCount} registros</div>`;
 }
 
 function renderWorkouts(list) {
   document.getElementById("workout-list").innerHTML = list.slice(0,5).map(w=>
     `<div class="activity"><div class="activity-name">${w.start} · ${w.type}</div><div class="activity-meta">${w.distance>0?w.distance.toFixed(1)+'km · ':''}${w.duration>0?Math.round(w.duration/60)+'min':''}${w.hrAvg?' · '+w.hrAvg+'bpm':''}</div></div>`
   ).join('') + `<div class="meta">${list.length} entrenos cargados</div>`;
+}
+
+function renderPlan(data) {
+  savedPlan = data;
+  document.getElementById("plan-text").textContent = data.plan;
+  const d = new Date(data.savedAt);
+  document.getElementById("plan-meta").textContent = `Generado el ${d.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'})}`;
+  document.getElementById("plan-section").style.display = "block";
+  document.getElementById("new-plan-form").style.display = "none";
+}
+
+function showNewPlanForm() {
+  document.getElementById("plan-section").style.display = "none";
+  document.getElementById("new-plan-form").style.display = "block";
 }
 
 function handleHealth(input) {
@@ -241,16 +283,26 @@ async function loadFromServer() {
   btn.disabled = true; btn.textContent = "Cargando...";
   msg.style.display = "none";
   try {
-    const res = await fetch("/api/data");
-    const data = await res.json();
+    const [dataRes, planRes] = await Promise.all([
+      fetch("/api/data"),
+      fetch("/api/get-plan")
+    ]);
+    const data = await dataRes.json();
+    const planData = await planRes.json();
     const loaded = [];
-    if (data.health && data.health !== "{}" && data.health.length > 50) {
+
+    if (data.health && data.health.length > 50) {
       try { healthData = parseHealthCSV(data.health); renderHealth(healthData); document.getElementById("btn-health").className="btn success"; document.getElementById("btn-health").textContent="✓ Cargado"; loaded.push("salud"); } catch(e) {}
     }
-    if (data.workouts && data.workouts !== "{}" && data.workouts.length > 50) {
+    if (data.workouts && data.workouts.length > 50) {
       try { workoutsData = parseWorkoutsCSV(data.workouts); renderWorkouts(workoutsData); document.getElementById("btn-workouts").className="btn success"; document.getElementById("btn-workouts").textContent="✓ Cargado"; loaded.push("entrenos"); } catch(e) {}
     }
-    msg.textContent = loaded.length > 0 ? "✓ Datos cargados: " + loaded.join(" y ") : "No hay datos nuevos en el servidor aún";
+    if (planData?.plan) {
+      renderPlan(planData);
+      loaded.push("plan");
+    }
+
+    msg.textContent = loaded.length > 0 ? "✓ Cargado: " + loaded.join(", ") : "No hay datos nuevos aún";
     msg.className = "server-msg " + (loaded.length > 0 ? "ok" : "err");
     msg.style.display = "block";
     updateState();
@@ -267,17 +319,16 @@ function updateState() {
   const hasData = healthData || workoutsData;
   document.getElementById("btn-analyze").disabled = !hasData;
   document.getElementById("empty-msg").style.display = hasData ? "none" : "block";
+  document.getElementById("daily-check-section").style.display = (hasData && savedPlan) ? "block" : "none";
 }
 
-function buildSystemPrompt() {
-  const acts = (workoutsData||[]).slice(0,10).map(w => {
+function buildContext() {
+  const acts = (workoutsData||[]).slice(0,7).map(w => {
     const pace = w.distance>0&&w.duration>0 ? (w.duration/60/w.distance).toFixed(1)+"min/km" : "";
     return `- ${w.start} | ${w.type} | ${w.distance>0?w.distance.toFixed(1)+"km":""} | ${w.duration>0?Math.round(w.duration/60)+"min":""} | ${w.hrAvg?w.hrAvg+"bpm avg":""} | ${w.elevGain>0?"+"+w.elevGain.toFixed(0)+"m":""} | ${pace}`;
   }).join("\n") || "No disponible";
 
-  return `Eres el entrenador personal de Sergio. Hablas en español, directo y práctico.
-
-DATOS DE SALUD (${healthData?.dateRange??'—'}):
+  return `DATOS DE SALUD (${healthData?.dateRange??'—'}):
 - FC reposo: ${healthData?.hrResting.last??'—'} bpm (media ${healthData?.hrResting.avg??'—'})
 - HRV: ${healthData?.hrv.last??'—'} ms (media ${healthData?.hrv.avg??'—'})
 - SatO2: ${healthData?.spo2.last??'—'}%
@@ -289,12 +340,6 @@ DATOS DE SALUD (${healthData?.dateRange??'—'}):
 ENTRENOS RECIENTES:
 ${acts}
 
-OBJETIVOS SEMANA:
-- Días disponibles: ${diasSel.length>0?diasSel.join(", "):"no especificado"}
-- Sensación: ${feelingSel||"no especificada"}
-- Objetivo: ${goalSel||"no especificado"}
-- Notas: ${document.getElementById("notes").value||"ninguna"}
-
 PERFIL:
 - Sergio, 44 años, 164cm, ~68kg, FC reposo ~50bpm
 - Objetivos: medio maratón asfalto 9 nov 2025 + Camino de Santiago Burgos→Santiago ~600km oct 2025
@@ -303,55 +348,113 @@ PERFIL:
 - Gym en casa: rack, barra, kettlebells 12/16kg, mancuernas hasta 20kg, caja de salto`;
 }
 
-function addMessage(role, content, thinking=false) {
-  const chat = document.getElementById("chat");
-  const div = document.createElement("div");
-  div.className = "msg " + role;
-  div.id = thinking ? "thinking-msg" : "";
-  if (role === "assistant") {
-    div.innerHTML = `<div class="avatar">E</div><div class="bubble assistant${thinking?' thinking':''}">${thinking?'Pensando...':content}</div>`;
-  } else {
-    div.innerHTML = `<div class="bubble user">${content}</div>`;
-  }
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-  return div;
-}
-
 async function runAnalysis() {
-  systemPrompt = buildSystemPrompt();
-  chatHistory = [];
   document.getElementById("chat").innerHTML = "";
   document.getElementById("chat-section").style.display = "block";
   document.getElementById("btn-analyze").disabled = true;
-  document.getElementById("btn-analyze").textContent = "Analizando...";
+  document.getElementById("btn-analyze").textContent = "Generando plan...";
+  chatHistory = [];
 
-  const initPrompt = `Analiza mis datos y genera mi plan para esta semana con estas 4 secciones:
+  const ctx = buildContext();
+  const initPrompt = `Eres el entrenador personal de Sergio. Hablas en español, eres directo y práctico.
+
+${ctx}
+
+SEMANA:
+- Días disponibles: ${diasSel.length>0?diasSel.join(", "):"no especificado"}
+- Sensación: ${feelingSel||"no especificada"}
+- Objetivo: ${goalSel||"no especificado"}
+- Notas: ${document.getElementById("notes").value||"ninguna"}
+
+Genera el plan semanal con estas 4 secciones:
 
 **ESTADO DE FORMA**
-(2-3 frases integrando salud y entrenos recientes)
+(2-3 frases)
 
 **RECUPERACIÓN**
 Nivel: Alto / Medio / Bajo + justificación breve
 
 **PLAN PRÓXIMOS 7 DÍAS**
-(sesiones concretas para los días disponibles: tipo, distancia/duración, zona FC, objetivo)
+(sesiones concretas por día: tipo, distancia/duración, zona FC, objetivo)
 
 **CONSEJO CLAVE**
-(1 consejo específico y accionable)`;
+(1 consejo específico)`;
 
-  addMessage("thinking-placeholder", "", true);
+  addMessage("thinking", "", true);
   try {
-    const reply = await callClaude([{ role:"user", content: systemPrompt+"\n\n"+initPrompt }]);
+    const reply = await callClaude([{ role:"user", content: initPrompt }]);
     document.getElementById("thinking-msg")?.remove();
-    chatHistory.push({ role:"assistant", content: reply });
+    chatHistory = [{ role:"user", content: initPrompt }, { role:"assistant", content: reply }];
     addMessage("assistant", reply);
+    systemPrompt = ctx;
+
+    await fetch("/api/save-plan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        plan: reply,
+        context: { dias: diasSel, sensacion: feelingSel, objetivo: goalSel }
+      })
+    });
+    savedPlan = { plan: reply, savedAt: new Date().toISOString() };
+    document.getElementById("plan-section").style.display = "block";
+    document.getElementById("plan-text").textContent = reply;
+    document.getElementById("plan-meta").textContent = "Generado ahora";
+    document.getElementById("new-plan-form").style.display = "none";
+    updateState();
   } catch(e) {
     document.getElementById("thinking-msg")?.remove();
     addMessage("assistant", "Error: "+e.message);
   }
   document.getElementById("btn-analyze").disabled = false;
   document.getElementById("btn-analyze").textContent = "Regenerar plan →";
+}
+
+async function runDailyCheck() {
+  document.getElementById("chat").innerHTML = "";
+  document.getElementById("chat-section").style.display = "block";
+  document.getElementById("btn-daily").disabled = true;
+  document.getElementById("btn-daily").textContent = "Analizando...";
+  chatHistory = [];
+
+  const ctx = buildContext();
+  systemPrompt = ctx;
+
+  const prompt = `Eres el entrenador personal de Sergio. Hablas en español, eres directo y práctico.
+
+${ctx}
+
+PLAN DE LA SEMANA (generado el ${savedPlan?.savedAt ? new Date(savedPlan.savedAt).toLocaleDateString('es-ES') : '—'}):
+${savedPlan?.plan}
+
+Hoy es ${new Date().toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'})}.
+
+Analiza los datos de hoy comparándolos con el plan previsto y responde con:
+
+**ESTADO HOY**
+(1-2 frases sobre cómo estás respecto al plan)
+
+**¿SEGUIMOS EL PLAN?**
+Sí / Ajuste menor / Cambio importante
+(justificación concreta basada en los datos: sueño, HRV, FC reposo, entrenos recientes)
+
+**SESIÓN DE HOY**
+(qué toca exactamente hoy, ajustado si es necesario)
+
+**ALERTA** (solo si hay algo importante)`;
+
+  addMessage("thinking", "", true);
+  try {
+    const reply = await callClaude([{ role:"user", content: prompt }]);
+    document.getElementById("thinking-msg")?.remove();
+    chatHistory = [{ role:"user", content: prompt }, { role:"assistant", content: reply }];
+    addMessage("assistant", reply);
+  } catch(e) {
+    document.getElementById("thinking-msg")?.remove();
+    addMessage("assistant", "Error: "+e.message);
+  }
+  document.getElementById("btn-daily").disabled = false;
+  document.getElementById("btn-daily").textContent = "Ver análisis de hoy →";
 }
 
 async function sendMessage() {
@@ -361,11 +464,15 @@ async function sendMessage() {
   input.value = "";
   addMessage("user", text);
   chatHistory.push({ role:"user", content: text });
-  addMessage("thinking-placeholder", "", true);
+  addMessage("thinking", "", true);
+
+  const ctx = systemPrompt || buildContext();
+  const planCtx = savedPlan ? `\n\nPLAN DE LA SEMANA:\n${savedPlan.plan}` : "";
+  const sysMsg = `Eres el entrenador personal de Sergio. Hablas en español, directo y práctico.\n\n${ctx}${planCtx}`;
 
   const msgs = [
-    { role:"user", content: systemPrompt+"\n\nEres mi entrenador. Responde en español, directo y práctico." },
-    ...chatHistory.filter(m => m.role !== "thinking-placeholder")
+    { role:"user", content: sysMsg },
+    ...chatHistory
   ];
 
   try {
@@ -379,11 +486,25 @@ async function sendMessage() {
   }
 }
 
+function addMessage(role, content, thinking=false) {
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.className = "msg " + (role === "thinking" ? "assistant" : role);
+  div.id = thinking ? "thinking-msg" : "";
+  if (role !== "user") {
+    div.innerHTML = `<div class="avatar">E</div><div class="bubble assistant${thinking?' thinking':''}">${thinking?'Pensando...':content}</div>`;
+  } else {
+    div.innerHTML = `<div class="bubble user">${content}</div>`;
+  }
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
 async function callClaude(messages) {
   const res = await fetch("/api/analyze", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt: messages[messages.length-1].content, messages })
+    body: JSON.stringify({ messages })
   });
   const data = await res.json();
   if (data.error) throw new Error(data.error);
