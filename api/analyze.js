@@ -2,17 +2,18 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
-
-  const { prompt } = req.body;
-  if (!prompt) return res.status(400).json({ error: "Prompt requerido" });
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "API key no configurada" });
 
   try {
+    const { messages } = req.body;
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "messages requerido" });
+    }
+
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -22,8 +23,8 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 1200,
-        messages: [{ role: "user", content: prompt }],
+        max_tokens: 1500,
+        messages,
       }),
     });
 
@@ -31,6 +32,6 @@ export default async function handler(req, res) {
     const text = data.content?.map(b => b.text || "").join("") || "Sin respuesta";
     res.status(200).json({ text });
   } catch (e) {
-    res.status(500).json({ error: "Error al conectar con la IA: " + e.message });
+    res.status(500).json({ error: e.message });
   }
 }
