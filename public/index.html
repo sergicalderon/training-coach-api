@@ -46,9 +46,20 @@
     .day-btn.active { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; font-weight: 500; }
     .section-title { font-size: 0.85rem; font-weight: 500; margin-bottom: 8px; }
     textarea { width: 100%; font-size: 0.8rem; padding: 8px 10px; border-radius: 8px; border: 1px solid #e5e5e5; background: #f9f9f9; color: #1a1a1a; resize: vertical; min-height: 60px; font-family: inherit; }
-    .plan-box { background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 10px; padding: 0.875rem 1rem; margin-bottom: 1rem; font-size: 0.8rem; line-height: 1.7; white-space: pre-wrap; color: #1a1a1a; }
-    .plan-meta { font-size: 0.7rem; color: #aaa; margin-top: 6px; }
-    .plan-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .plan-box { background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 10px; padding: 0.875rem 1rem; margin-bottom: 0.5rem; font-size: 0.8rem; line-height: 1.7; white-space: pre-wrap; color: #1a1a1a; }
+    .plan-meta { font-size: 0.7rem; color: #aaa; margin-bottom: 8px; }
+    .divider { border: none; border-top: 1px solid #f0f0f0; margin: 1rem 0; }
+    .trend-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .trend-card { background: #f9f9f9; border-radius: 8px; padding: 0.6rem 0.75rem; }
+    .trend-label { font-size: 0.65rem; color: #888; margin-bottom: 6px; }
+    .trend-bars { display: flex; align-items: flex-end; gap: 3px; height: 36px; }
+    .trend-bar { flex: 1; border-radius: 3px 3px 0 0; min-height: 3px; }
+    .trend-bar.hrv { background: #3b82f6; }
+    .trend-bar.hr { background: #f87171; }
+    .trend-bar.sleep { background: #a78bfa; }
+    .trend-current { font-size: 1rem; font-weight: 500; margin-top: 4px; }
+    .trend-unit { font-size: 0.65rem; color: #888; margin-left: 2px; }
+    .trend-range { font-size: 0.6rem; color: #bbb; margin-top: 2px; }
     .chat { max-height: 500px; overflow-y: auto; margin-bottom: 12px; }
     .msg { display: flex; gap: 8px; margin-bottom: 12px; }
     .msg.user { flex-direction: row-reverse; }
@@ -61,20 +72,6 @@
     .chat-input input { flex: 1; font-size: 0.8rem; padding: 7px 10px; border-radius: 8px; border: 1px solid #e5e5e5; background: #f9f9f9; color: #1a1a1a; font-family: inherit; }
     .chat-input button { padding: 7px 14px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; background: transparent; }
     .empty { text-align: center; padding: 2rem 0; color: #aaa; font-size: 0.85rem; }
-    .badge { display: inline-block; font-size: 0.65rem; padding: 2px 8px; border-radius: 20px; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; margin-left: 8px; vertical-align: middle; }
-    .badge.saved { background: #f0faf4; color: #16a34a; border-color: #86efac; }
-    .divider { border: none; border-top: 1px solid #f0f0f0; margin: 1rem 0; }
-    .trend-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
-    .trend-card { background: #f9f9f9; border-radius: 8px; padding: 0.6rem 0.75rem; }
-    .trend-label { font-size: 0.65rem; color: #888; margin-bottom: 6px; }
-    .trend-bars { display: flex; align-items: flex-end; gap: 3px; height: 40px; }
-    .trend-bar { flex: 1; border-radius: 3px 3px 0 0; min-height: 3px; transition: height 0.3s; }
-    .trend-bar.hrv { background: #3b82f6; }
-    .trend-bar.hr { background: #f87171; }
-    .trend-bar.sleep { background: #a78bfa; }
-    .trend-values { display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.6rem; color: #aaa; }
-    .trend-current { font-size: 1rem; font-weight: 500; margin-top: 4px; }
-    .trend-unit { font-size: 0.65rem; color: #888; margin-left: 2px; }
   </style>
 </head>
 <body>
@@ -92,25 +89,25 @@
       <label><input type="file" accept=".csv" id="csv-health" style="display:none" onchange="handleHealth(this)"><span class="btn" id="btn-health">Subir CSV</span></label>
     </div>
     <div id="health-stats"></div>
-    <div id="health-history" style="display:none">
+    <div id="health-history" style="display:none;margin-top:12px">
       <div class="trend-grid">
         <div class="trend-card">
-          <div class="trend-label">HRV · 7 días</div>
+          <div class="trend-label">HRV 7 días</div>
           <div class="trend-bars" id="hrv-bars"></div>
-          <div class="trend-values"><span id="hrv-min"></span><span id="hrv-max"></span></div>
           <div class="trend-current"><span id="hrv-last">—</span><span class="trend-unit">ms</span></div>
+          <div class="trend-range" id="hrv-range"></div>
         </div>
         <div class="trend-card">
-          <div class="trend-label">FC reposo · 7 días</div>
+          <div class="trend-label">FC reposo 7 días</div>
           <div class="trend-bars" id="hr-bars"></div>
-          <div class="trend-values"><span id="hr-min"></span><span id="hr-max"></span></div>
           <div class="trend-current"><span id="hr-last">—</span><span class="trend-unit">bpm</span></div>
+          <div class="trend-range" id="hr-range"></div>
         </div>
         <div class="trend-card">
-          <div class="trend-label">Sueño · 7 días</div>
+          <div class="trend-label">Sueño 7 días</div>
           <div class="trend-bars" id="sleep-bars"></div>
-          <div class="trend-values"><span id="sleep-min"></span><span id="sleep-max"></span></div>
           <div class="trend-current"><span id="sleep-last">—</span><span class="trend-unit">h</span></div>
+          <div class="trend-range" id="sleep-range"></div>
         </div>
       </div>
     </div>
@@ -128,12 +125,10 @@
   </div>
 
   <div id="plan-section" style="display:none">
-    <div class="label">Plan de la semana <span class="badge saved" id="plan-badge">Guardado</span></div>
+    <div class="label">Plan de la semana</div>
     <div class="plan-box" id="plan-text"></div>
     <div class="plan-meta" id="plan-meta"></div>
-    <div class="plan-actions">
-      <button class="btn" onclick="showNewPlanForm()">Cambiar plan ↺</button>
-    </div>
+    <button class="btn" onclick="showNewPlanForm()" style="margin-bottom:1rem">Cambiar plan ↺</button>
     <hr class="divider">
   </div>
 
@@ -142,7 +137,7 @@
     <div class="box">
       <div class="section-title">Días disponibles</div>
       <div class="days" id="days-container"></div>
-      <div class="section-title">¿Cómo te encuentras?</div>
+      <div class="section-title">Como te encuentras?</div>
       <div class="days" id="feeling-container"></div>
       <div class="section-title">Objetivo principal</div>
       <div class="days" id="goal-container"></div>
@@ -153,7 +148,7 @@
   </div>
 
   <div id="daily-check-section" style="display:none">
-    <button class="btn-secondary" id="btn-daily" onclick="runDailyCheck()">Ver análisis de hoy →</button>
+    <button class="btn-secondary" id="btn-daily" onclick="runDailyCheck()">Ver analisis de hoy →</button>
   </div>
 
   <div id="chat-section" style="display:none">
@@ -171,7 +166,7 @@
 </div>
 
 <script>
-const WORKOUT_NAMES = {
+var WORKOUT_NAMES = {
   "Outdoor Run":"Carrera exterior","Indoor Run":"Carrera interior",
   "Exterior Ejecutar":"Carrera exterior","Interior Ejecutar":"Carrera interior",
   "Ejecutar":"Carrera","Trail Run":"Trail running","Outdoor Walk":"Caminata exterior",
@@ -179,168 +174,197 @@ const WORKOUT_NAMES = {
   "Functional Strength Training":"Fuerza funcional","Entrenamiento de Fuerza Funcional":"Fuerza funcional",
   "Traditional Strength Training":"Fuerza tradicional","Entrenamiento de Fuerza Tradicional":"Fuerza tradicional",
   "High Intensity Interval Training":"HIIT","Core Training":"Core","Hiking":"Senderismo",
-  "Cycling":"Ciclismo","Swimming":"Natación","Other":"Otro"
+  "Cycling":"Ciclismo","Swimming":"Natacion","Other":"Otro"
 };
-const fixName = n => WORKOUT_NAMES[n] || n;
+function fixName(n) { return WORKOUT_NAMES[n] || n; }
 
-let healthData = null, workoutsData = null, historyData = [];
-let systemPrompt = null, chatHistory = [];
-let diasSel = [], feelingSel = "", goalSel = "";
-let savedPlan = null;
+var healthData = null, workoutsData = null, historyData = [];
+var systemPrompt = null, chatHistory = [];
+var diasSel = [], feelingSel = "", goalSel = "";
+var savedPlan = null;
 
-const DIAS = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
-const FEELINGS = ["Muy bien","Bien","Normal","Cansado","Muy cansado"];
-const GOALS = ["Recuperar","Mantener","Progresar","Carga alta","Competición próxima"];
+var DIAS = ["Lun","Mar","Mie","Jue","Vie","Sab","Dom"];
+var FEELINGS = ["Muy bien","Bien","Normal","Cansado","Muy cansado"];
+var GOALS = ["Recuperar","Mantener","Progresar","Carga alta","Competicion proxima"];
 
 function initButtons() {
-  const dc = document.getElementById("days-container");
-  DIAS.forEach(d => { const b = document.createElement("button"); b.className="day-btn"; b.textContent=d; b.onclick=()=>{ diasSel.includes(d)?diasSel=diasSel.filter(x=>x!==d):diasSel.push(d); dc.querySelectorAll("button").forEach((btn,i)=>btn.classList.toggle("active",diasSel.includes(DIAS[i]))); }; dc.appendChild(b); });
-  const fc = document.getElementById("feeling-container");
-  FEELINGS.forEach(f => { const b = document.createElement("button"); b.className="day-btn"; b.textContent=f; b.onclick=()=>{ feelingSel=f; fc.querySelectorAll("button").forEach(btn=>btn.classList.toggle("active",btn.textContent===f)); }; fc.appendChild(b); });
-  const gc = document.getElementById("goal-container");
-  GOALS.forEach(g => { const b = document.createElement("button"); b.className="day-btn"; b.textContent=g; b.onclick=()=>{ goalSel=g; gc.querySelectorAll("button").forEach(btn=>btn.classList.toggle("active",btn.textContent===g)); }; gc.appendChild(b); });
+  var dc = document.getElementById("days-container");
+  DIAS.forEach(function(d, i) {
+    var b = document.createElement("button");
+    b.className = "day-btn"; b.textContent = d;
+    b.onclick = function() {
+      var idx = diasSel.indexOf(d);
+      if (idx >= 0) diasSel.splice(idx, 1); else diasSel.push(d);
+      dc.querySelectorAll("button").forEach(function(btn, j) { btn.classList.toggle("active", diasSel.indexOf(DIAS[j]) >= 0); });
+    };
+    dc.appendChild(b);
+  });
+  var fc = document.getElementById("feeling-container");
+  FEELINGS.forEach(function(f) {
+    var b = document.createElement("button");
+    b.className = "day-btn"; b.textContent = f;
+    b.onclick = function() { feelingSel = f; fc.querySelectorAll("button").forEach(function(btn) { btn.classList.toggle("active", btn.textContent === f); }); };
+    fc.appendChild(b);
+  });
+  var gc = document.getElementById("goal-container");
+  GOALS.forEach(function(g) {
+    var b = document.createElement("button");
+    b.className = "day-btn"; b.textContent = g;
+    b.onclick = function() { goalSel = g; gc.querySelectorAll("button").forEach(function(btn) { btn.classList.toggle("active", btn.textContent === g); }); };
+    gc.appendChild(b);
+  });
 }
 
-function extractMetric(csvText, colName) {
-  if (!csvText) return null;
-  const lines = csvText.trim().split("\n");
-  const headers = lines[0].split(",").map(h => h.trim().replace(/"/g, ""));
-  const idx = headers.indexOf(colName);
-  if (idx === -1) return null;
-  const vals = lines.slice(1).map(l => parseFloat(l.split(",")[idx])).filter(v => !isNaN(v) && v > 0);
-  return vals.length ? vals.reduce((s,v) => s+v, 0) / vals.length : null;
-}
-
-function renderHistory(history) {
-  if (!history || history.length === 0) return;
-  document.getElementById("health-history").style.display = "block";
-
-  const days = [...history].reverse();
-
-  const hrvVals = days.map(d => extractMetric(d.data, "Variabilidad de Frecuencia Cardíaca (ms)"));
-  const hrVals = days.map(d => extractMetric(d.data, "Frecuencia Cardiaca en Reposo (count/min)"));
-  const sleepVals = days.map(d => extractMetric(d.data, "Análisis del Sueño [Total] (hr)"));
-
-  renderBars("hrv-bars", hrvVals, "hrv");
-  renderBars("hr-bars", hrVals, "hr");
-  renderBars("sleep-bars", sleepVals, "sleep");
-
-  const lastValid = arr => [...arr].reverse().find(v => v != null);
-  const min = arr => { const f = arr.filter(v=>v!=null); return f.length ? Math.min(...f).toFixed(0) : "—"; };
-  const max = arr => { const f = arr.filter(v=>v!=null); return f.length ? Math.max(...f).toFixed(0) : "—"; };
-
-  document.getElementById("hrv-last").textContent = lastValid(hrvVals)?.toFixed(0) ?? "—";
-  document.getElementById("hr-last").textContent = lastValid(hrVals)?.toFixed(0) ?? "—";
-  document.getElementById("sleep-last").textContent = lastValid(sleepVals)?.toFixed(1) ?? "—";
-
-  document.getElementById("hrv-min").textContent = min(hrvVals);
-  document.getElementById("hrv-max").textContent = max(hrvVals);
-  document.getElementById("hr-min").textContent = min(hrVals);
-  document.getElementById("hr-max").textContent = max(hrVals);
-  document.getElementById("sleep-min").textContent = min(sleepVals);
-  document.getElementById("sleep-max").textContent = max(sleepVals);
-}
-
-function renderBars(containerId, vals, cls) {
-  const container = document.getElementById(containerId);
-  const filtered = vals.filter(v => v != null);
-  if (!filtered.length) return;
-  const min = Math.min(...filtered) * 0.85;
-  const max = Math.max(...filtered) * 1.05;
-  container.innerHTML = vals.map((v, i) => {
-    const pct = v != null ? Math.max(8, ((v - min) / (max - min)) * 100) : 4;
-    const date = historyData.length > 0 ? historyData[historyData.length - 1 - i]?.date?.slice(5) : "";
-    const opacity = v != null ? 1 : 0.2;
-    return `<div class="trend-bar ${cls}" style="height:${pct}%;opacity:${opacity}" title="${date}: ${v?.toFixed(1)??'—'}"></div>`;
-  }).join("");
-}
-
-function buildHistorySummary() {
-  if (!historyData || !historyData.length) return "";
-  const days = [...historyData].reverse();
-  const lines = days.map(function(d) {
-    const hrv = extractMetric(d.data, "Variabilidad de Frecuencia Cardíaca (ms)");
-    const hr = extractMetric(d.data, "Frecuencia Cardiaca en Reposo (count/min)");
-    const sleep = extractMetric(d.data, "Análisis del Sueño [Total] (hr)");
-    return "- " + d.date + ": HRV " + (hrv ? hrv.toFixed(0) : "—") + "ms | FC reposo " + (hr ? hr.toFixed(0) : "—") + "bpm | Sueño " + (sleep ? sleep.toFixed(1) : "—") + "h";
-  }).join("\n");
-  return "\nHISTÓRICO 7 DÍAS:\n" + lines;
-}
+function parseDuration(str) {
   if (!str) return 0;
-  const p = str.split(":").map(Number);
+  var p = str.split(":").map(Number);
   if (p.length === 3) return p[0]*3600 + p[1]*60 + p[2];
   if (p.length === 2) return p[0]*60 + p[1];
-  return parseFloat(str)||0;
+  return parseFloat(str) || 0;
+}
+
+function parseCSVRows(text) {
+  var lines = text.trim().split("\n");
+  var headers = lines[0].split(",").map(function(h) { return h.trim().replace(/"/g,""); });
+  return lines.slice(1).map(function(line) {
+    var vals = line.split(",").map(function(v) { return v.trim().replace(/"/g,""); });
+    var obj = {};
+    headers.forEach(function(h, i) { obj[h] = vals[i]; });
+    return obj;
+  }).filter(function(r) { return r[headers[0]]; });
 }
 
 function parseHealthCSV(text) {
-  const lines = text.trim().split("\n");
-  const headers = lines[0].split(",").map(h=>h.trim().replace(/"/g,""));
-  const rows = lines.slice(1).map(line=>{ const vals=line.split(",").map(v=>v.trim().replace(/"/g,"")); const obj={}; headers.forEach((h,i)=>obj[h]=vals[i]); return obj; }).filter(r=>r[headers[0]]);
-  const col = name => rows.map(r=>parseFloat(r[name])).filter(v=>!isNaN(v)&&v>0);
-  const avg = arr => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : null;
-  const last = arr => arr.length ? arr[arr.length-1] : null;
-  const h = name => ({ avg: avg(col(name))?.toFixed(1), last: last(col(name))?.toFixed(1) });
+  var rows = parseCSVRows(text);
+  function col(name) { return rows.map(function(r) { return parseFloat(r[name]); }).filter(function(v) { return !isNaN(v) && v > 0; }); }
+  function avg(arr) { return arr.length ? arr.reduce(function(s,v) { return s+v; }, 0) / arr.length : null; }
+  function last(arr) { return arr.length ? arr[arr.length-1] : null; }
+  function h(name) { var c = col(name); return { avg: avg(c) ? avg(c).toFixed(1) : null, last: last(c) ? last(c).toFixed(1) : null }; }
+  var headers = text.trim().split("\n")[0].split(",").map(function(x) { return x.trim().replace(/"/g,""); });
   return {
     hrResting: h("Frecuencia Cardiaca en Reposo (count/min)"),
     hrv: h("Variabilidad de Frecuencia Cardíaca (ms)"),
     spo2: h("Saturación de Oxígeno en Sangre (%)"),
     vo2max: h("VO2 Máx (ml/(kg·min))"),
-    weight: h("Peso (kg)"), fatPct: h("Porcentaje de grasa corporal (%)"),
+    weight: h("Peso (kg)"),
+    fatPct: h("Porcentaje de grasa corporal (%)"),
     leanMass: h("Masa Corporal Magra (kg)"),
     sleep: {
-      total: avg(col("Análisis del Sueño [Total] (hr)"))?.toFixed(1),
-      deep: avg(col("Análisis del Sueño [Profundo] (hr)"))?.toFixed(1),
-      rem: avg(col("Análisis del Sueño [REM] (hr)"))?.toFixed(1),
+      total: avg(col("Análisis del Sueño [Total] (hr)")) ? avg(col("Análisis del Sueño [Total] (hr)")).toFixed(1) : null,
+      deep: avg(col("Análisis del Sueño [Profundo] (hr)")) ? avg(col("Análisis del Sueño [Profundo] (hr)")).toFixed(1) : null,
+      rem: avg(col("Análisis del Sueño [REM] (hr)")) ? avg(col("Análisis del Sueño [REM] (hr)")).toFixed(1) : null
     },
     cardioRecovery: h("Recuperación Cardio (count/min)"),
     rowCount: rows.length,
-    dateRange: rows.length ? rows[0][headers[0]]?.slice(0,10)+" → "+rows[rows.length-1][headers[0]]?.slice(0,10) : null,
+    dateRange: rows.length ? rows[0][headers[0]].slice(0,10) + " -> " + rows[rows.length-1][headers[0]].slice(0,10) : null
   };
 }
 
 function parseWorkoutsCSV(text) {
-  const lines = text.trim().split("\n");
-  const headers = lines[0].split(",").map(h=>h.trim().replace(/"/g,""));
-  const rows = lines.slice(1).map(line=>{ const vals=line.split(",").map(v=>v.trim().replace(/"/g,"")); const obj={}; headers.forEach((h,i)=>obj[h]=vals[i]); return obj; }).filter(r=>r[headers[0]]);
-  return rows.map(r=>({
-    type: fixName(r["Type"]||r["Workout Type"]||"—"),
-    start: (r["Start"]||"—").slice(0,10),
-    duration: parseDuration(r["Duration"]),
-    distance: parseFloat(r["Distance (km)"]||r["Distancia (km)"])||0,
-    hrAvg: parseFloat(r["Avg Heart Rate (bpm)"]||r["Frecuencia Cardíaca Promedio (count/min)"])||null,
-    hrMax: parseFloat(r["Max Heart Rate (bpm)"]||r["Frecuencia Cardíaca Máxima (count/min)"])||null,
-    elevGain: parseFloat(r["Elevation Ascended (m)"]||r["Elevación Ascendida (m)"])||0,
-    calories: parseFloat(r["Active Energy (kJ)"]||r["Energía Activa (kJ)"])?Math.round(parseFloat(r["Active Energy (kJ)"]||r["Energía Activa (kJ)"])/4.184):null,
-  })).slice(0,20);
+  var rows = parseCSVRows(text);
+  return rows.map(function(r) {
+    var kcal = parseFloat(r["Active Energy (kJ)"] || r["Energía Activa (kJ)"]);
+    return {
+      type: fixName(r["Type"] || r["Workout Type"] || "—"),
+      start: (r["Start"] || "—").slice(0,10),
+      duration: parseDuration(r["Duration"]),
+      distance: parseFloat(r["Distance (km)"] || r["Distancia (km)"]) || 0,
+      hrAvg: parseFloat(r["Avg Heart Rate (bpm)"] || r["Frecuencia Cardíaca Promedio (count/min)"]) || null,
+      hrMax: parseFloat(r["Max Heart Rate (bpm)"] || r["Frecuencia Cardíaca Máxima (count/min)"]) || null,
+      elevGain: parseFloat(r["Elevation Ascended (m)"] || r["Elevación Ascendida (m)"]) || 0,
+      calories: !isNaN(kcal) ? Math.round(kcal / 4.184) : null
+    };
+  }).slice(0,20);
+}
+
+function extractMetric(csvText, colName) {
+  if (!csvText) return null;
+  var lines = csvText.trim().split("\n");
+  var headers = lines[0].split(",").map(function(h) { return h.trim().replace(/"/g,""); });
+  var idx = headers.indexOf(colName);
+  if (idx === -1) return null;
+  var vals = lines.slice(1).map(function(l) { return parseFloat(l.split(",")[idx]); }).filter(function(v) { return !isNaN(v) && v > 0; });
+  return vals.length ? vals.reduce(function(s,v) { return s+v; }, 0) / vals.length : null;
+}
+
+function renderBars(containerId, vals, cls) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  var filtered = vals.filter(function(v) { return v != null; });
+  if (!filtered.length) return;
+  var mn = Math.min.apply(null, filtered) * 0.9;
+  var mx = Math.max.apply(null, filtered) * 1.05;
+  container.innerHTML = vals.map(function(v) {
+    var pct = v != null ? Math.max(8, ((v - mn) / (mx - mn || 1)) * 100) : 4;
+    var op = v != null ? 1 : 0.2;
+    return '<div class="trend-bar ' + cls + '" style="height:' + pct + '%;opacity:' + op + '" title="' + (v ? v.toFixed(1) : "—") + '"></div>';
+  }).join("");
+}
+
+function renderHistory(history) {
+  if (!history || !history.length) return;
+  var days = history.slice().reverse();
+  var hrvVals = days.map(function(d) { return extractMetric(d.data, "Variabilidad de Frecuencia Cardíaca (ms)"); });
+  var hrVals = days.map(function(d) { return extractMetric(d.data, "Frecuencia Cardiaca en Reposo (count/min)"); });
+  var sleepVals = days.map(function(d) { return extractMetric(d.data, "Análisis del Sueño [Total] (hr)"); });
+
+  renderBars("hrv-bars", hrvVals, "hrv");
+  renderBars("hr-bars", hrVals, "hr");
+  renderBars("sleep-bars", sleepVals, "sleep");
+
+  function lastValid(arr) { for (var i = arr.length-1; i >= 0; i--) { if (arr[i] != null) return arr[i]; } return null; }
+  function minF(arr) { var f = arr.filter(function(v) { return v != null; }); return f.length ? Math.min.apply(null,f).toFixed(0) : "—"; }
+  function maxF(arr) { var f = arr.filter(function(v) { return v != null; }); return f.length ? Math.max.apply(null,f).toFixed(0) : "—"; }
+
+  var lHrv = lastValid(hrvVals); document.getElementById("hrv-last").textContent = lHrv ? lHrv.toFixed(0) : "—";
+  var lHr = lastValid(hrVals); document.getElementById("hr-last").textContent = lHr ? lHr.toFixed(0) : "—";
+  var lSleep = lastValid(sleepVals); document.getElementById("sleep-last").textContent = lSleep ? lSleep.toFixed(1) : "—";
+  document.getElementById("hrv-range").textContent = minF(hrvVals) + " - " + maxF(hrvVals) + " ms";
+  document.getElementById("hr-range").textContent = minF(hrVals) + " - " + maxF(hrVals) + " bpm";
+  document.getElementById("sleep-range").textContent = minF(sleepVals) + " - " + maxF(sleepVals) + " h";
+  document.getElementById("health-history").style.display = "block";
+}
+
+function buildHistorySummary() {
+  if (!historyData || !historyData.length) return "";
+  var days = historyData.slice().reverse();
+  var lines = days.map(function(d) {
+    var hrv = extractMetric(d.data, "Variabilidad de Frecuencia Cardíaca (ms)");
+    var hr = extractMetric(d.data, "Frecuencia Cardiaca en Reposo (count/min)");
+    var sleep = extractMetric(d.data, "Análisis del Sueño [Total] (hr)");
+    return "- " + d.date + ": HRV " + (hrv ? hrv.toFixed(0) : "—") + "ms | FC " + (hr ? hr.toFixed(0) : "—") + "bpm | Sueño " + (sleep ? sleep.toFixed(1) : "—") + "h";
+  });
+  return "\nHISTORICO 7 DIAS:\n" + lines.join("\n");
 }
 
 function renderHealth(d) {
-  document.getElementById("health-stats").innerHTML = `
-    <div class="stats">
-      <div class="stat"><div class="stat-label">FC reposo</div><div class="stat-value">${d.hrResting.last??'—'}<span class="stat-unit">bpm</span></div></div>
-      <div class="stat hl"><div class="stat-label">HRV</div><div class="stat-value">${d.hrv.last??'—'}<span class="stat-unit">ms</span></div></div>
-      <div class="stat hl"><div class="stat-label">VO2Max</div><div class="stat-value">${d.vo2max.last??'—'}<span class="stat-unit">ml/kg/min</span></div></div>
-    </div>
-    <div class="stats">
-      <div class="stat"><div class="stat-label">Peso</div><div class="stat-value">${d.weight.last??'—'}<span class="stat-unit">kg</span></div></div>
-      <div class="stat"><div class="stat-label">Grasa</div><div class="stat-value">${d.fatPct.last??'—'}<span class="stat-unit">%</span></div></div>
-      <div class="stat"><div class="stat-label">Sueño</div><div class="stat-value">${d.sleep.total??'—'}<span class="stat-unit">h</span></div></div>
-    </div>
-    <div class="meta">${d.dateRange??''} · ${d.rowCount} registros</div>`;
+  document.getElementById("health-stats").innerHTML =
+    '<div class="stats">' +
+    '<div class="stat"><div class="stat-label">FC reposo</div><div class="stat-value">' + (d.hrResting.last||"—") + '<span class="stat-unit">bpm</span></div></div>' +
+    '<div class="stat hl"><div class="stat-label">HRV</div><div class="stat-value">' + (d.hrv.last||"—") + '<span class="stat-unit">ms</span></div></div>' +
+    '<div class="stat hl"><div class="stat-label">VO2Max</div><div class="stat-value">' + (d.vo2max.last||"—") + '<span class="stat-unit">ml/kg/min</span></div></div>' +
+    '</div><div class="stats">' +
+    '<div class="stat"><div class="stat-label">Peso</div><div class="stat-value">' + (d.weight.last||"—") + '<span class="stat-unit">kg</span></div></div>' +
+    '<div class="stat"><div class="stat-label">Grasa</div><div class="stat-value">' + (d.fatPct.last||"—") + '<span class="stat-unit">%</span></div></div>' +
+    '<div class="stat"><div class="stat-label">Sueno</div><div class="stat-value">' + (d.sleep.total||"—") + '<span class="stat-unit">h</span></div></div>' +
+    '</div><div class="meta">' + (d.dateRange||"") + " · " + d.rowCount + " registros</div>";
 }
 
 function renderWorkouts(list) {
-  document.getElementById("workout-list").innerHTML = list.slice(0,5).map(w=>
-    `<div class="activity"><div class="activity-name">${w.start} · ${w.type}</div><div class="activity-meta">${w.distance>0?w.distance.toFixed(1)+'km · ':''}${w.duration>0?Math.round(w.duration/60)+'min':''}${w.hrAvg?' · '+w.hrAvg+'bpm':''}</div></div>`
-  ).join('') + `<div class="meta">${list.length} entrenos cargados</div>`;
+  var html = list.slice(0,5).map(function(w) {
+    return '<div class="activity"><div class="activity-name">' + w.start + " · " + w.type + '</div><div class="activity-meta">' +
+      (w.distance > 0 ? w.distance.toFixed(1) + "km · " : "") +
+      (w.duration > 0 ? Math.round(w.duration/60) + "min" : "") +
+      (w.hrAvg ? " · " + w.hrAvg + "bpm" : "") + "</div></div>";
+  }).join("");
+  document.getElementById("workout-list").innerHTML = html + '<div class="meta">' + list.length + " entrenos cargados</div>";
 }
 
 function renderPlan(data) {
   savedPlan = data;
   document.getElementById("plan-text").textContent = data.plan;
-  const d = new Date(data.savedAt);
-  document.getElementById("plan-meta").textContent = `Generado el ${d.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'})}`;
+  var d = new Date(data.savedAt);
+  document.getElementById("plan-meta").textContent = "Generado el " + d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"});
   document.getElementById("plan-section").style.display = "block";
   document.getElementById("new-plan-form").style.display = "none";
 }
@@ -351,42 +375,56 @@ function showNewPlanForm() {
 }
 
 function handleHealth(input) {
-  const file = input.files[0]; if (!file) return;
+  var file = input.files[0]; if (!file) return;
   document.getElementById("err-health").textContent = "";
   document.getElementById("btn-health").textContent = "Cargando...";
-  const r = new FileReader();
-  r.onload = ev => {
-    try { healthData = parseHealthCSV(ev.target.result); renderHealth(healthData); document.getElementById("btn-health").className="btn success"; document.getElementById("btn-health").textContent="✓ Cargado"; updateState(); }
-    catch { document.getElementById("err-health").textContent="Error al parsear CSV de salud."; document.getElementById("btn-health").textContent="Subir CSV"; }
+  var r = new FileReader();
+  r.onload = function(ev) {
+    try {
+      healthData = parseHealthCSV(ev.target.result);
+      renderHealth(healthData);
+      document.getElementById("btn-health").className = "btn success";
+      document.getElementById("btn-health").textContent = "✓ Cargado";
+      updateState();
+    } catch(e) {
+      document.getElementById("err-health").textContent = "Error al parsear CSV de salud.";
+      document.getElementById("btn-health").textContent = "Subir CSV";
+    }
   };
   r.readAsText(file);
 }
 
 function handleWorkouts(input) {
-  const file = input.files[0]; if (!file) return;
+  var file = input.files[0]; if (!file) return;
   document.getElementById("err-workouts").textContent = "";
   document.getElementById("btn-workouts").textContent = "Cargando...";
-  const r = new FileReader();
-  r.onload = ev => {
-    try { workoutsData = parseWorkoutsCSV(ev.target.result); renderWorkouts(workoutsData); document.getElementById("btn-workouts").className="btn success"; document.getElementById("btn-workouts").textContent="✓ Cargado"; updateState(); }
-    catch { document.getElementById("err-workouts").textContent="Error al parsear CSV de entrenos."; document.getElementById("btn-workouts").textContent="Subir CSV"; }
+  var r = new FileReader();
+  r.onload = function(ev) {
+    try {
+      workoutsData = parseWorkoutsCSV(ev.target.result);
+      renderWorkouts(workoutsData);
+      document.getElementById("btn-workouts").className = "btn success";
+      document.getElementById("btn-workouts").textContent = "✓ Cargado";
+      updateState();
+    } catch(e) {
+      document.getElementById("err-workouts").textContent = "Error al parsear CSV de entrenos.";
+      document.getElementById("btn-workouts").textContent = "Subir CSV";
+    }
   };
   r.readAsText(file);
 }
 
-async function loadFromServer() {
-  const btn = document.getElementById("btn-server");
-  const msg = document.getElementById("server-msg");
+function loadFromServer() {
+  var btn = document.getElementById("btn-server");
+  var msg = document.getElementById("server-msg");
   btn.disabled = true; btn.textContent = "Cargando...";
   msg.style.display = "none";
-  try {
-    const [dataRes, planRes] = await Promise.all([
-      fetch("/api/data"),
-      fetch("/api/get-plan")
-    ]);
-    const data = await dataRes.json();
-    const planData = await planRes.json();
-    const loaded = [];
+
+  Promise.all([fetch("/api/data"), fetch("/api/get-plan")]).then(function(responses) {
+    return Promise.all([responses[0].json(), responses[1].json()]);
+  }).then(function(results) {
+    var data = results[0], planData = results[1];
+    var loaded = [];
 
     if (data.health && data.health.length > 50) {
       try { healthData = parseHealthCSV(data.health); renderHealth(healthData); document.getElementById("btn-health").className="btn success"; document.getElementById("btn-health").textContent="✓ Cargado"; loaded.push("salud"); } catch(e) {}
@@ -394,223 +432,179 @@ async function loadFromServer() {
     if (data.workouts && data.workouts.length > 50) {
       try { workoutsData = parseWorkoutsCSV(data.workouts); renderWorkouts(workoutsData); document.getElementById("btn-workouts").className="btn success"; document.getElementById("btn-workouts").textContent="✓ Cargado"; loaded.push("entrenos"); } catch(e) {}
     }
-    if (planData?.plan) {
+    if (data.history && data.history.length) {
+      historyData = data.history;
+      renderHistory(data.history);
+      loaded.push("historico");
+    }
+    if (planData && planData.plan) {
       renderPlan(planData);
       loaded.push("plan");
     }
-    if (data.history?.length) {
-      historyData = data.history;
-      renderHistory(data.history);
-      if (!loaded.includes("salud")) loaded.push("histórico");
-    }
 
-    msg.textContent = loaded.length > 0 ? "✓ Cargado: " + loaded.join(", ") : "No hay datos nuevos aún";
+    msg.textContent = loaded.length > 0 ? "✓ Cargado: " + loaded.join(", ") : "No hay datos nuevos aun";
     msg.className = "server-msg " + (loaded.length > 0 ? "ok" : "err");
     msg.style.display = "block";
     updateState();
-  } catch(e) {
+  }).catch(function(e) {
     msg.textContent = "Error: " + e.message;
     msg.className = "server-msg err";
     msg.style.display = "block";
-  }
-  btn.disabled = false;
-  btn.textContent = "Cargar datos de hoy ↓";
+  }).finally(function() {
+    btn.disabled = false;
+    btn.textContent = "Cargar datos de hoy ↓";
+  });
 }
 
 function updateState() {
-  const hasData = healthData || workoutsData;
+  var hasData = healthData || workoutsData;
   document.getElementById("btn-analyze").disabled = !hasData;
   document.getElementById("empty-msg").style.display = hasData ? "none" : "block";
   document.getElementById("daily-check-section").style.display = (hasData && savedPlan) ? "block" : "none";
 }
 
 function buildContext() {
-  const acts = (workoutsData||[]).slice(0,7).map(w => {
-    const pace = w.distance>0&&w.duration>0 ? (w.duration/60/w.distance).toFixed(1)+"min/km" : "";
-    return `- ${w.start} | ${w.type} | ${w.distance>0?w.distance.toFixed(1)+"km":""} | ${w.duration>0?Math.round(w.duration/60)+"min":""} | ${w.hrAvg?w.hrAvg+"bpm avg":""} | ${w.elevGain>0?"+"+w.elevGain.toFixed(0)+"m":""} | ${pace}`;
+  var acts = (workoutsData||[]).slice(0,7).map(function(w) {
+    var pace = w.distance > 0 && w.duration > 0 ? (w.duration/60/w.distance).toFixed(1) + "min/km" : "";
+    return "- " + w.start + " | " + w.type + " | " + (w.distance>0?w.distance.toFixed(1)+"km":"") + " | " + (w.duration>0?Math.round(w.duration/60)+"min":"") + " | " + (w.hrAvg?w.hrAvg+"bpm avg":"") + " | " + (w.elevGain>0?"+"+w.elevGain.toFixed(0)+"m":"") + " | " + pace;
   }).join("\n") || "No disponible";
 
-  return `DATOS DE SALUD (${healthData?.dateRange??'—'}):
-- FC reposo: ${healthData?.hrResting.last??'—'} bpm (media ${healthData?.hrResting.avg??'—'})
-- HRV: ${healthData?.hrv.last??'—'} ms (media ${healthData?.hrv.avg??'—'})
-- SatO2: ${healthData?.spo2.last??'—'}%
-- VO2Max: ${healthData?.vo2max.last??'—'} ml/kg/min
-- Peso: ${healthData?.weight.last??'—'} kg | Grasa: ${healthData?.fatPct.last??'—'}%
-- Sueño: ${healthData?.sleep.total??'—'}h total | ${healthData?.sleep.deep??'—'}h profundo | ${healthData?.sleep.rem??'—'}h REM
-- Recuperación cardio: ${healthData?.cardioRecovery.last??'—'} bpm
-${buildHistorySummary()}
-ENTRENOS RECIENTES:
-${acts}
-
-PERFIL:
-- Sergio, 44 años, 164cm, ~68kg, FC reposo ~50bpm
-- Objetivos: medio maratón asfalto 9 nov 2025 + Camino de Santiago Burgos→Santiago ~600km oct 2025
-- Entrenos mañana en ayunas, fuerza tardes ~16:30h
-- Calzado minimalista zero-drop
-- Gym en casa: rack, barra, kettlebells 12/16kg, mancuernas hasta 20kg, caja de salto`;
+  return "DATOS DE SALUD (" + (healthData&&healthData.dateRange||"—") + "):\n" +
+    "- FC reposo: " + (healthData&&healthData.hrResting.last||"—") + " bpm\n" +
+    "- HRV: " + (healthData&&healthData.hrv.last||"—") + " ms\n" +
+    "- SatO2: " + (healthData&&healthData.spo2.last||"—") + "%\n" +
+    "- VO2Max: " + (healthData&&healthData.vo2max.last||"—") + " ml/kg/min\n" +
+    "- Peso: " + (healthData&&healthData.weight.last||"—") + " kg | Grasa: " + (healthData&&healthData.fatPct.last||"—") + "%\n" +
+    "- Sueno: " + (healthData&&healthData.sleep.total||"—") + "h total | " + (healthData&&healthData.sleep.deep||"—") + "h profundo | " + (healthData&&healthData.sleep.rem||"—") + "h REM\n" +
+    "- Recuperacion cardio: " + (healthData&&healthData.cardioRecovery.last||"—") + " bpm\n" +
+    buildHistorySummary() + "\n" +
+    "ENTRENOS RECIENTES:\n" + acts + "\n\n" +
+    "PERFIL:\n" +
+    "- Sergio, 44 anos, 164cm, ~68kg, FC reposo ~50bpm\n" +
+    "- Objetivos: medio maraton asfalto 9 nov 2025 + Camino de Santiago Burgos->Santiago ~600km oct 2025\n" +
+    "- Entrenos manana en ayunas, fuerza tardes ~16:30h\n" +
+    "- Calzado minimalista zero-drop\n" +
+    "- Gym en casa: rack, barra, kettlebells 12/16kg, mancuernas hasta 20kg, caja de salto";
 }
 
-async function runAnalysis() {
+function runAnalysis() {
   document.getElementById("chat").innerHTML = "";
   document.getElementById("chat-section").style.display = "block";
   document.getElementById("btn-analyze").disabled = true;
   document.getElementById("btn-analyze").textContent = "Generando plan...";
   chatHistory = [];
 
-  const ctx = buildContext();
-  const initPrompt = `Eres el entrenador personal de Sergio. Hablas en español, eres directo y práctico.
+  var ctx = buildContext();
+  var notes = document.getElementById("notes").value || "ninguna";
+  var initPrompt = "Eres el entrenador personal de Sergio. Hablas en espanol, eres directo y practico.\n\n" + ctx +
+    "\n\nSEMANA:\n- Dias disponibles: " + (diasSel.length>0?diasSel.join(", "):"no especificado") +
+    "\n- Sensacion: " + (feelingSel||"no especificada") +
+    "\n- Objetivo: " + (goalSel||"no especificado") +
+    "\n- Notas: " + notes +
+    "\n\nGenera el plan semanal con estas 4 secciones:\n\n**ESTADO DE FORMA**\n(2-3 frases)\n\n**RECUPERACION**\nNivel: Alto / Medio / Bajo + justificacion breve\n\n**PLAN PROXIMOS 7 DIAS**\n(sesiones concretas por dia: tipo, distancia/duracion, zona FC, objetivo)\n\n**CONSEJO CLAVE**\n(1 consejo especifico)";
 
-${ctx}
-
-SEMANA:
-- Días disponibles: ${diasSel.length>0?diasSel.join(", "):"no especificado"}
-- Sensación: ${feelingSel||"no especificada"}
-- Objetivo: ${goalSel||"no especificado"}
-- Notas: ${document.getElementById("notes").value||"ninguna"}
-
-Genera el plan semanal con estas 4 secciones:
-
-**ESTADO DE FORMA**
-(2-3 frases)
-
-**RECUPERACIÓN**
-Nivel: Alto / Medio / Bajo + justificación breve
-
-**PLAN PRÓXIMOS 7 DÍAS**
-(sesiones concretas por día: tipo, distancia/duración, zona FC, objetivo)
-
-**CONSEJO CLAVE**
-(1 consejo específico)`;
-
-  addMessage("thinking", "", true);
-  try {
-    const reply = await callClaude([{ role:"user", content: initPrompt }]);
-    document.getElementById("thinking-msg")?.remove();
-    chatHistory = [{ role:"user", content: initPrompt }, { role:"assistant", content: reply }];
+  addMessage("assistant", "", true);
+  callClaude([{role:"user", content: initPrompt}]).then(function(reply) {
+    document.getElementById("thinking-msg") && document.getElementById("thinking-msg").remove();
+    chatHistory = [{role:"user", content: initPrompt}, {role:"assistant", content: reply}];
     addMessage("assistant", reply);
     systemPrompt = ctx;
-
-    await fetch("/api/save-plan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        plan: reply,
-        context: { dias: diasSel, sensacion: feelingSel, objetivo: goalSel }
-      })
-    });
     savedPlan = { plan: reply, savedAt: new Date().toISOString() };
-    document.getElementById("plan-section").style.display = "block";
     document.getElementById("plan-text").textContent = reply;
     document.getElementById("plan-meta").textContent = "Generado ahora";
+    document.getElementById("plan-section").style.display = "block";
     document.getElementById("new-plan-form").style.display = "none";
     updateState();
-  } catch(e) {
-    document.getElementById("thinking-msg")?.remove();
-    addMessage("assistant", "Error: "+e.message);
-  }
-  document.getElementById("btn-analyze").disabled = false;
-  document.getElementById("btn-analyze").textContent = "Regenerar plan →";
+    fetch("/api/save-plan", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ plan: reply, context: { dias: diasSel, sensacion: feelingSel, objetivo: goalSel } })
+    });
+  }).catch(function(e) {
+    document.getElementById("thinking-msg") && document.getElementById("thinking-msg").remove();
+    addMessage("assistant", "Error: " + e.message);
+  }).finally(function() {
+    document.getElementById("btn-analyze").disabled = false;
+    document.getElementById("btn-analyze").textContent = "Regenerar plan →";
+  });
 }
 
-async function runDailyCheck() {
+function runDailyCheck() {
   document.getElementById("chat").innerHTML = "";
   document.getElementById("chat-section").style.display = "block";
   document.getElementById("btn-daily").disabled = true;
   document.getElementById("btn-daily").textContent = "Analizando...";
   chatHistory = [];
 
-  const ctx = buildContext();
+  var ctx = buildContext();
   systemPrompt = ctx;
+  var today = new Date().toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"});
 
-  const prompt = `Eres el entrenador personal de Sergio. Hablas en español, eres directo y práctico.
+  var prompt = "Eres el entrenador personal de Sergio. Hablas en espanol, directo y practico.\n\n" + ctx +
+    "\n\nPLAN DE LA SEMANA (generado el " + (savedPlan&&savedPlan.savedAt ? new Date(savedPlan.savedAt).toLocaleDateString("es-ES") : "—") + "):\n" + (savedPlan&&savedPlan.plan||"No disponible") +
+    "\n\nHoy es " + today + ".\n\nAnaliza los datos de hoy comparandolos con el plan y responde:\n\n**ESTADO HOY**\n(1-2 frases)\n\n**SEGUIMOS EL PLAN?**\nSi / Ajuste menor / Cambio importante\n(justificacion concreta)\n\n**SESION DE HOY**\n(que toca exactamente hoy, ajustado si es necesario)\n\n**ALERTA** (solo si hay algo importante)";
 
-${ctx}
-
-PLAN DE LA SEMANA (generado el ${savedPlan?.savedAt ? new Date(savedPlan.savedAt).toLocaleDateString('es-ES') : '—'}):
-${savedPlan?.plan}
-
-Hoy es ${new Date().toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'})}.
-
-Analiza los datos de hoy comparándolos con el plan previsto y responde con:
-
-**ESTADO HOY**
-(1-2 frases sobre cómo estás respecto al plan)
-
-**¿SEGUIMOS EL PLAN?**
-Sí / Ajuste menor / Cambio importante
-(justificación concreta basada en los datos: sueño, HRV, FC reposo, entrenos recientes)
-
-**SESIÓN DE HOY**
-(qué toca exactamente hoy, ajustado si es necesario)
-
-**ALERTA** (solo si hay algo importante)`;
-
-  addMessage("thinking", "", true);
-  try {
-    const reply = await callClaude([{ role:"user", content: prompt }]);
-    document.getElementById("thinking-msg")?.remove();
-    chatHistory = [{ role:"user", content: prompt }, { role:"assistant", content: reply }];
+  addMessage("assistant", "", true);
+  callClaude([{role:"user", content: prompt}]).then(function(reply) {
+    document.getElementById("thinking-msg") && document.getElementById("thinking-msg").remove();
+    chatHistory = [{role:"user", content: prompt}, {role:"assistant", content: reply}];
     addMessage("assistant", reply);
-  } catch(e) {
-    document.getElementById("thinking-msg")?.remove();
-    addMessage("assistant", "Error: "+e.message);
-  }
-  document.getElementById("btn-daily").disabled = false;
-  document.getElementById("btn-daily").textContent = "Ver análisis de hoy →";
+  }).catch(function(e) {
+    document.getElementById("thinking-msg") && document.getElementById("thinking-msg").remove();
+    addMessage("assistant", "Error: " + e.message);
+  }).finally(function() {
+    document.getElementById("btn-daily").disabled = false;
+    document.getElementById("btn-daily").textContent = "Ver analisis de hoy →";
+  });
 }
 
-async function sendMessage() {
-  const input = document.getElementById("chat-input");
-  const text = input.value.trim();
+function sendMessage() {
+  var input = document.getElementById("chat-input");
+  var text = input.value.trim();
   if (!text) return;
   input.value = "";
   addMessage("user", text);
-  chatHistory.push({ role:"user", content: text });
-  addMessage("thinking", "", true);
+  chatHistory.push({role:"user", content: text});
+  addMessage("assistant", "", true);
 
-  const ctx = systemPrompt || buildContext();
-  const planCtx = savedPlan ? `\n\nPLAN DE LA SEMANA:\n${savedPlan.plan}` : "";
-  const sysMsg = `Eres el entrenador personal de Sergio. Hablas en español, directo y práctico.\n\n${ctx}${planCtx}`;
+  var ctx = systemPrompt || buildContext();
+  var planCtx = savedPlan ? "\n\nPLAN DE LA SEMANA:\n" + savedPlan.plan : "";
+  var sysMsg = "Eres el entrenador personal de Sergio. Hablas en espanol, directo y practico.\n\n" + ctx + planCtx;
+  var msgs = [{role:"user", content: sysMsg}].concat(chatHistory);
 
-  const msgs = [
-    { role:"user", content: sysMsg },
-    ...chatHistory
-  ];
-
-  try {
-    const reply = await callClaude(msgs);
-    document.getElementById("thinking-msg")?.remove();
-    chatHistory.push({ role:"assistant", content: reply });
+  callClaude(msgs).then(function(reply) {
+    document.getElementById("thinking-msg") && document.getElementById("thinking-msg").remove();
+    chatHistory.push({role:"assistant", content: reply});
     addMessage("assistant", reply);
-  } catch(e) {
-    document.getElementById("thinking-msg")?.remove();
-    addMessage("assistant", "Error: "+e.message);
-  }
+  }).catch(function(e) {
+    document.getElementById("thinking-msg") && document.getElementById("thinking-msg").remove();
+    addMessage("assistant", "Error: " + e.message);
+  });
 }
 
-function addMessage(role, content, thinking=false) {
-  const chat = document.getElementById("chat");
-  const div = document.createElement("div");
-  div.className = "msg " + (role === "thinking" ? "assistant" : role);
-  div.id = thinking ? "thinking-msg" : "";
+function addMessage(role, content, thinking) {
+  var chat = document.getElementById("chat");
+  var div = document.createElement("div");
+  div.className = "msg " + (role === "user" ? "user" : "assistant");
+  if (thinking) div.id = "thinking-msg";
   if (role !== "user") {
-    div.innerHTML = `<div class="avatar">E</div><div class="bubble assistant${thinking?' thinking':''}">${thinking?'Pensando...':content}</div>`;
+    div.innerHTML = '<div class="avatar">E</div><div class="bubble assistant' + (thinking?" thinking":"") + '">' + (thinking?"Pensando...":content) + "</div>";
   } else {
-    div.innerHTML = `<div class="bubble user">${content}</div>`;
+    div.innerHTML = '<div class="bubble user">' + content + "</div>";
   }
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
 
-async function callClaude(messages) {
-  const res = await fetch("/api/analyze", {
+function callClaude(messages) {
+  return fetch("/api/analyze", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages })
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({messages: messages})
+  }).then(function(res) { return res.json(); }).then(function(data) {
+    if (data.error) throw new Error(data.error);
+    return data.text;
   });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-  return data.text;
 }
 
 initButtons();
