@@ -351,16 +351,19 @@ function buildHistorySummary() {
   return "\nHISTORICO 7 DIAS:\n" + lines.join("\n");
 }
 
+function fmt1(v) { return v != null ? parseFloat(v).toFixed(1) : "—"; }
+function fmt0(v) { return v != null ? parseFloat(v).toFixed(0) : "—"; }
+
 function renderHealth(d) {
   document.getElementById("health-stats").innerHTML =
     '<div class="stats">' +
-    '<div class="stat"><div class="stat-label">FC reposo</div><div class="stat-value">' + (d.hrResting.last||"—") + '<span class="stat-unit">bpm</span></div></div>' +
-    '<div class="stat hl"><div class="stat-label">HRV</div><div class="stat-value">' + (d.hrv.last||"—") + '<span class="stat-unit">ms</span></div></div>' +
-    '<div class="stat hl"><div class="stat-label">VO2Max</div><div class="stat-value">' + (d.vo2max.last||"—") + '<span class="stat-unit">ml/kg/min</span></div></div>' +
+    '<div class="stat"><div class="stat-label">FC reposo</div><div class="stat-value">' + fmt0(d.hrResting.last) + '<span class="stat-unit">bpm</span></div></div>' +
+    '<div class="stat hl"><div class="stat-label">HRV</div><div class="stat-value">' + fmt0(d.hrv.last) + '<span class="stat-unit">ms</span></div></div>' +
+    '<div class="stat hl"><div class="stat-label">VO2Max</div><div class="stat-value">' + fmt1(d.vo2max.last) + '<span class="stat-unit">ml/kg/min</span></div></div>' +
     '</div><div class="stats">' +
-    '<div class="stat"><div class="stat-label">Peso</div><div class="stat-value">' + (d.weight.last||"—") + '<span class="stat-unit">kg</span></div></div>' +
-    '<div class="stat"><div class="stat-label">Grasa</div><div class="stat-value">' + (d.fatPct.last||"—") + '<span class="stat-unit">%</span></div></div>' +
-    '<div class="stat"><div class="stat-label">Sueno</div><div class="stat-value">' + (d.sleep.total||"—") + '<span class="stat-unit">h</span></div></div>' +
+    '<div class="stat"><div class="stat-label">Peso</div><div class="stat-value">' + fmt1(d.weight.last) + '<span class="stat-unit">kg</span></div></div>' +
+    '<div class="stat"><div class="stat-label">Grasa</div><div class="stat-value">' + fmt0(d.fatPct.last) + '<span class="stat-unit">%</span></div></div>' +
+    '<div class="stat"><div class="stat-label">Sueno</div><div class="stat-value">' + fmt1(d.sleep.total) + '<span class="stat-unit">h</span></div></div>' +
     '</div><div class="meta">' + (d.dateRange||"") + " · " + d.rowCount + " registros</div>";
 }
 
