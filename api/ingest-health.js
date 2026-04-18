@@ -104,7 +104,12 @@ export default async function handler(req, res) {
     });
 
     const jsonStr = extractJSON(raw);
-    const json = JSON.parse(jsonStr);
+    let json;
+    try {
+      json = JSON.parse(jsonStr);
+    } catch(parseErr) {
+      return res.status(400).json({ error: "JSON parse failed: " + parseErr.message, length: raw.length });
+    }
     const byDay = splitByDay(json);
     const dates = Object.keys(byDay).sort();
 
