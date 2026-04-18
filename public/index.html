@@ -255,29 +255,22 @@ function parseCSVRows(text) {
   }).filter(function(r) { return r[headers[0]]; });
 }
 
-function parseHealthCSV(text) {
-  var rows = parseCSVRows(text);
-  function col(name) { return rows.map(function(r) { return parseFloat(r[name]); }).filter(function(v) { return !isNaN(v) && v > 0; }); }
-  function avg(arr) { return arr.length ? arr.reduce(function(s,v) { return s+v; }, 0) / arr.length : null; }
-  function last(arr) { return arr.length ? arr[arr.length-1] : null; }
-  function h(name) { var c = col(name); return { avg: avg(c) ? avg(c).toFixed(1) : null, last: last(c) ? last(c).toFixed(1) : null }; }
-  var headers = text.trim().split("\n")[0].split(",").map(function(x) { return x.trim().replace(/"/g,""); });
+function parseHealthJSON(d) {
+  if (!d) return null;
   return {
-    hrResting: h("Frecuencia Cardiaca en Reposo (count/min)"),
-    hrv: h("Variabilidad de Frecuencia Cardíaca (ms)"),
-    spo2: h("Saturación de Oxígeno en Sangre (%)"),
-    vo2max: h("VO2 Máx (ml/(kg·min))"),
-    weight: h("Peso (kg)"),
-    fatPct: h("Porcentaje de grasa corporal (%)"),
-    leanMass: h("Masa Corporal Magra (kg)"),
-    sleep: {
-      total: avg(col("Análisis del Sueño [Total] (hr)")) ? avg(col("Análisis del Sueño [Total] (hr)")).toFixed(1) : null,
-      deep: avg(col("Análisis del Sueño [Profundo] (hr)")) ? avg(col("Análisis del Sueño [Profundo] (hr)")).toFixed(1) : null,
-      rem: avg(col("Análisis del Sueño [REM] (hr)")) ? avg(col("Análisis del Sueño [REM] (hr)")).toFixed(1) : null
-    },
-    cardioRecovery: h("Recuperación Cardio (count/min)"),
-    rowCount: rows.length,
-    dateRange: rows.length ? rows[0][headers[0]].slice(0,10) + " -> " + rows[rows.length-1][headers[0]].slice(0,10) : null
+    hrResting: d.hrResting || { avg: null, last: null },
+    hrv: d.hrv || { avg: null, last: null },
+    spo2: d.spo2 || { avg: null, last: null },
+    vo2max: d.vo2max || { avg: null, last: null },
+    weight: d.weight || { avg: null, last: null },
+    fatPct: d.fatPct || { avg: null, last: null },
+    leanMass: d.leanMass || { avg: null, last: null },
+    sleep: d.sleep || { total: null, deep: null, rem: null },
+    cardioRecovery: d.cardioRecovery || { avg: null, last: null },
+    wristTemp: d.wristTemp || { avg: null },
+    steps: d.steps || { total: null },
+    rowCount: 1,
+    dateRange: d.date || null,
   };
 }
 
@@ -298,14 +291,14 @@ function parseWorkoutsCSV(text) {
   }).slice(0,20);
 }
 
-function extractMetric(csvText, colName) {
-  if (!csvText) return null;
-  var lines = csvText.trim().split("\n");
-  var headers = lines[0].split(",").map(function(h) { return h.trim().replace(/"/g,""); });
-  var idx = headers.indexOf(colName);
-  if (idx === -1) return null;
-  var vals = lines.slice(1).map(function(l) { return parseFloat(l.split(",")[idx]); }).filter(function(v) { return !isNaN(v) && v > 0; });
-  return vals.length ? vals.reduce(function(s,v) { return s+v; }, 0) / vals.length : null;
+function extractMetric(d, name) {
+  if (!d) return null;
+  var map = {
+    "hrv": function(x) { return x.hrv && x.hrv.avg; },
+    "hrResting": function(x) { return x.hrResting && x.hrResting.avg; },
+    "sleep": function(x) { return x.sleep && x.sleep.total; }
+  };
+  return map[name] ? map[name](d) : null;
 }
 
 function renderBars(containerId, vals, cls) {
@@ -325,9 +318,9 @@ function renderBars(containerId, vals, cls) {
 function renderHistory(history) {
   if (!history || !history.length) return;
   var days = history.slice().reverse();
-  var hrvVals = days.map(function(d) { return extractMetric(d.data, "Variabilidad de Frecuencia Cardíaca (ms)"); });
-  var hrVals = days.map(function(d) { return extractMetric(d.data, "Frecuencia Cardiaca en Reposo (count/min)"); });
-  var sleepVals = days.map(function(d) { return extractMetric(d.data, "Análisis del Sueño [Total] (hr)"); });
+  var hrvVals = days.map(function(d) { return d.data && d.data.hrv ? d.data.hrv.avg : null; });
+  var hrVals = days.map(function(d) { return d.data && d.data.hrResting ? d.data.hrResting.avg : null; });
+  var sleepVals = days.map(function(d) { return d.data && d.data.sleep ? d.data.sleep.total : null; });
 
   renderBars("hrv-bars", hrvVals, "hrv");
   renderBars("hr-bars", hrVals, "hr");
@@ -337,9 +330,9 @@ function renderHistory(history) {
   function minF(arr) { var f = arr.filter(function(v) { return v != null; }); return f.length ? Math.min.apply(null,f).toFixed(0) : "—"; }
   function maxF(arr) { var f = arr.filter(function(v) { return v != null; }); return f.length ? Math.max.apply(null,f).toFixed(0) : "—"; }
 
-  var lHrv = lastValid(hrvVals); document.getElementById("hrv-last").textContent = lHrv ? lHrv.toFixed(0) : "—";
-  var lHr = lastValid(hrVals); document.getElementById("hr-last").textContent = lHr ? lHr.toFixed(0) : "—";
-  var lSleep = lastValid(sleepVals); document.getElementById("sleep-last").textContent = lSleep ? lSleep.toFixed(1) : "—";
+  var lHrv = lastValid(hrvVals); document.getElementById("hrv-last").textContent = lHrv ? parseFloat(lHrv).toFixed(0) : "—";
+  var lHr = lastValid(hrVals); document.getElementById("hr-last").textContent = lHr ? parseFloat(lHr).toFixed(0) : "—";
+  var lSleep = lastValid(sleepVals); document.getElementById("sleep-last").textContent = lSleep ? parseFloat(lSleep).toFixed(1) : "—";
   document.getElementById("hrv-range").textContent = minF(hrvVals) + " - " + maxF(hrvVals) + " ms";
   document.getElementById("hr-range").textContent = minF(hrVals) + " - " + maxF(hrVals) + " bpm";
   document.getElementById("sleep-range").textContent = minF(sleepVals) + " - " + maxF(sleepVals) + " h";
@@ -350,10 +343,10 @@ function buildHistorySummary() {
   if (!historyData || !historyData.length) return "";
   var days = historyData.slice().reverse();
   var lines = days.map(function(d) {
-    var hrv = extractMetric(d.data, "Variabilidad de Frecuencia Cardíaca (ms)");
-    var hr = extractMetric(d.data, "Frecuencia Cardiaca en Reposo (count/min)");
-    var sleep = extractMetric(d.data, "Análisis del Sueño [Total] (hr)");
-    return "- " + d.date + ": HRV " + (hrv ? hrv.toFixed(0) : "—") + "ms | FC " + (hr ? hr.toFixed(0) : "—") + "bpm | Sueño " + (sleep ? sleep.toFixed(1) : "—") + "h";
+    var hrv = d.data && d.data.hrv ? parseFloat(d.data.hrv.avg).toFixed(0) : "—";
+    var hr = d.data && d.data.hrResting ? parseFloat(d.data.hrResting.avg).toFixed(0) : "—";
+    var sleep = d.data && d.data.sleep && d.data.sleep.total ? parseFloat(d.data.sleep.total).toFixed(1) : "—";
+    return "- " + d.date + ": HRV " + hrv + "ms | FC " + hr + "bpm | Sueno " + sleep + "h";
   });
   return "\nHISTORICO 7 DIAS:\n" + lines.join("\n");
 }
@@ -492,8 +485,14 @@ function loadFromServer() {
     var data = results[0], planData = results[1];
     var loaded = [];
 
-    if (data.health && data.health.length > 50) {
-      try { healthData = parseHealthCSV(data.health); renderHealth(healthData); document.getElementById("btn-health").className="btn success"; document.getElementById("btn-health").textContent="✓ Cargado"; loaded.push("salud"); } catch(e) {}
+    if (data.health) {
+      try {
+        healthData = parseHealthJSON(data.health);
+        renderHealth(healthData);
+        document.getElementById("btn-health").className = "btn success";
+        document.getElementById("btn-health").textContent = "✓ Cargado";
+        loaded.push("salud");
+      } catch(e) {}
     }
     if (data.workouts && data.workouts.length > 50) {
       try { workoutsData = parseWorkoutsCSV(data.workouts); renderWorkouts(workoutsData); document.getElementById("btn-workouts").className="btn success"; document.getElementById("btn-workouts").textContent="✓ Cargado"; loaded.push("entrenos"); } catch(e) {}
