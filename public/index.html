@@ -128,7 +128,11 @@
     <div class="label">Plan de la semana</div>
     <div class="plan-box" id="plan-text"></div>
     <div class="plan-meta" id="plan-meta"></div>
-    <button class="btn" onclick="showNewPlanForm()" style="margin-bottom:1rem">Cambiar plan ↺</button>
+    <button class="btn" onclick="showNewPlanForm()" style="margin-bottom:0.5rem">Cambiar plan ↺</button>
+    <button class="btn" onclick="toggleHistory()" style="margin-bottom:1rem;margin-left:8px">Planes anteriores ↓</button>
+    <div id="history-section" style="display:none;margin-bottom:1rem">
+      <div id="history-list"></div>
+    </div>
     <hr class="divider">
   </div>
 
@@ -182,6 +186,7 @@ var healthData = null, workoutsData = null, historyData = [];
 var systemPrompt = null, chatHistory = [];
 var diasSel = [], feelingSel = "", goalSel = "";
 var savedPlan = null;
+var planHistory = [];
 
 var DIAS = ["Lun","Mar","Mie","Jue","Vie","Sab","Dom"];
 var FEELINGS = ["Muy bien","Bien","Normal","Cansado","Muy cansado"];
@@ -372,6 +377,51 @@ function renderPlan(data) {
 function showNewPlanForm() {
   document.getElementById("plan-section").style.display = "none";
   document.getElementById("new-plan-form").style.display = "block";
+}
+
+function toggleHistory() {
+  var section = document.getElementById("history-section");
+  if (section.style.display === "none") {
+    section.style.display = "block";
+    loadHistory();
+  } else {
+    section.style.display = "none";
+  }
+}
+
+function loadHistory() {
+  var list = document.getElementById("history-list");
+  list.innerHTML = '<div class="meta">Cargando...</div>';
+  fetch("/api/get-history").then(function(r) { return r.json(); }).then(function(data) {
+    if (!data.plans || !data.plans.length) {
+      list.innerHTML = '<div class="meta">No hay planes anteriores guardados.</div>';
+      return;
+    }
+    list.innerHTML = data.plans.map(function(p) {
+      var d = new Date(p.savedAt);
+      var dateStr = d.toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long", year:"numeric"});
+      var preview = p.plan.slice(0, 120) + (p.plan.length > 120 ? "..." : "");
+      return '<div style="border:1px solid #e5e5e5;border-radius:10px;padding:0.75rem 1rem;margin-bottom:8px;cursor:pointer" onclick="togglePlanDetail(this)">' +
+        '<div style="font-size:0.8rem;font-weight:500;margin-bottom:4px">' + dateStr + '</div>' +
+        '<div style="font-size:0.75rem;color:#888" class="preview">' + preview + '</div>' +
+        '<div style="font-size:0.75rem;color:#1a1a1a;display:none;white-space:pre-wrap;margin-top:8px" class="full">' + p.plan + '</div>' +
+        '</div>';
+    }).join("");
+  }).catch(function(e) {
+    list.innerHTML = '<div class="meta" style="color:#dc2626">Error: ' + e.message + '</div>';
+  });
+}
+
+function togglePlanDetail(el) {
+  var preview = el.querySelector(".preview");
+  var full = el.querySelector(".full");
+  if (full.style.display === "none") {
+    full.style.display = "block";
+    preview.style.display = "none";
+  } else {
+    full.style.display = "none";
+    preview.style.display = "block";
+  }
 }
 
 function handleHealth(input) {
