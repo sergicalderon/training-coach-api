@@ -8,6 +8,12 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; color: #1a1a1a; min-height: 100vh; }
     .container { max-width: 600px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    .pin-screen { max-width: 320px; margin: 6rem auto; text-align: center; padding: 0 1rem; }
+    .pin-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .pin-sub { font-size: 0.85rem; color: #666; margin-bottom: 1.5rem; }
+    .pin-input { width: 100%; padding: 0.75rem; font-size: 1.2rem; text-align: center; border: 1px solid #e5e5e5; border-radius: 10px; letter-spacing: 0.3em; margin-bottom: 0.75rem; font-family: inherit; }
+    .pin-input:focus { outline: none; border-color: #1d4ed8; }
+    .pin-error { font-size: 0.8rem; color: #dc2626; margin-bottom: 0.75rem; min-height: 1.2rem; }
     h1 { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.25rem; }
     .subtitle { font-size: 0.85rem; color: #666; margin-bottom: 1.5rem; }
     .label { font-size: 0.7rem; font-weight: 600; color: #999; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
@@ -75,6 +81,15 @@
   </style>
 </head>
 <body>
+<div id="pin-screen" class="pin-screen">
+  <div class="pin-title">Entrenador personal IA</div>
+  <div class="pin-sub">Introduce tu PIN para acceder</div>
+  <input type="password" id="pin-input" class="pin-input" placeholder="••••" maxlength="8" onkeydown="if(event.key==='Enter')verifyPin()" autofocus />
+  <div class="pin-error" id="pin-error"></div>
+  <button class="btn-primary" onclick="verifyPin()">Acceder →</button>
+</div>
+
+<div id="main-app" style="display:none">
 <div class="container">
   <h1>Entrenador personal IA</h1>
   <p class="subtitle">Carga tus datos y obtén tu plan diario adaptado.</p>
@@ -167,6 +182,7 @@
   </div>
 
   <div class="empty" id="empty-msg">Pulsa "Cargar datos de hoy" o sube los CSVs manualmente</div>
+</div>
 </div>
 
 <script>
@@ -657,6 +673,37 @@ function callClaude(messages) {
   });
 }
 
+function verifyPin() {
+  var pin = document.getElementById("pin-input").value.trim();
+  var err = document.getElementById("pin-error");
+  if (!pin) { err.textContent = "Introduce el PIN"; return; }
+  err.textContent = "";
+  fetch("/api/verify-pin", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({pin: pin})
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.ok) {
+      sessionStorage.setItem("pin_ok", "1");
+      document.getElementById("pin-screen").style.display = "none";
+      document.getElementById("main-app").style.display = "block";
+    } else {
+      err.textContent = "PIN incorrecto";
+      document.getElementById("pin-input").value = "";
+    }
+  }).catch(function() {
+    err.textContent = "Error de conexion";
+  });
+}
+
+function checkSession() {
+  if (sessionStorage.getItem("pin_ok") === "1") {
+    document.getElementById("pin-screen").style.display = "none";
+    document.getElementById("main-app").style.display = "block";
+  }
+}
+
+checkSession();
 initButtons();
 </script>
 </body>
