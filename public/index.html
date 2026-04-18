@@ -256,15 +256,15 @@ function renderBars(containerId, vals, cls) {
 }
 
 function buildHistorySummary() {
-  if (!historyData.length) return "";
+  if (!historyData || !historyData.length) return "";
   const days = [...historyData].reverse();
-  const lines = days.map(d => {
+  const lines = days.map(function(d) {
     const hrv = extractMetric(d.data, "Variabilidad de Frecuencia Cardíaca (ms)");
     const hr = extractMetric(d.data, "Frecuencia Cardiaca en Reposo (count/min)");
     const sleep = extractMetric(d.data, "Análisis del Sueño [Total] (hr)");
-    return `- ${d.date}: HRV ${hrv?.toFixed(0)??'—'}ms | FC reposo ${hr?.toFixed(0)??'—'}bpm | Sueño ${sleep?.toFixed(1)??'—'}h`;
+    return "- " + d.date + ": HRV " + (hrv ? hrv.toFixed(0) : "—") + "ms | FC reposo " + (hr ? hr.toFixed(0) : "—") + "bpm | Sueño " + (sleep ? sleep.toFixed(1) : "—") + "h";
   }).join("\n");
-  return `\nHISTÓRICO 7 DÍAS:\n${lines}`;
+  return "\nHISTÓRICO 7 DÍAS:\n" + lines;
 }
   if (!str) return 0;
   const p = str.split(":").map(Number);
