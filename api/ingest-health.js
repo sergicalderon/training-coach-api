@@ -1,24 +1,86 @@
 export const config = { api: { bodyParser: false } };
 
-function extractCSV(body) {
+function extractJSON(body) {
   const start = body.indexOf("\r\n\r\n");
   if (start === -1) return body;
-  const csvStart = start + 4;
+  const jsonStart = start + 4;
   const boundaryEnd = body.lastIndexOf("\r\n--");
-  if (boundaryEnd === -1) return body.slice(csvStart);
-  return body.slice(csvStart, boundaryEnd);
+  if (boundaryEnd === -1) return body.slice(jsonStart);
+  return body.slice(jsonStart, boundaryEnd);
 }
 
-function splitByDay(csv) {
-  const lines = csv.trim().split("\n");
-  const headers = lines[0];
+function getMetricByDay(metrics, name) {
+  const metric = metrics.find(m => m.name === name);
+  if (!metric) return {};
   const byDay = {};
-  lines.slice(1).forEach(line => {
-    const date = line.slice(0, 10);
-    if (!date.match(/^\d{4}-\d{2}-\d{2}/)) return;
-    if (!byDay[date]) byDay[date] = [headers];
-    byDay[date].push(line);
+  metric.data.forEach(entry => {
+    const date = entry.date.slice(0, 10);
+    if (!byDay[date]) byDay[date] = [];
+    byDay[date].push(entry);
   });
+  return byDay;
+}
+
+function avgQty(entries) {
+  if (!entries || !entries.length) return null;
+  const vals = entries.map(e => e.qty).filter(v => v != null && !isNaN(v));
+  return vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : null;
+}
+
+function lastQty(entries) {
+  if (!entries || !entries.length) return null;
+  const vals = entries.map(e => e.qty).filter(v => v != null && !isNaN(v));
+  return vals.length ? vals[vals.length - 1] : null;
+}
+
+function splitByDay(json) {
+  const metrics = json?.data?.metrics || [];
+  const allDates = new Set();
+
+  metrics.forEach(m => {
+    if (m.name === "sleep_analysis") {
+      m.data.forEach(e => allDates.add(e.date.slice(0, 10)));
+    } else {
+      m.data.forEach(e => allDates.add(e.date.slice(0, 10)));
+    }
+  });
+
+  const byDay = {};
+  allDates.forEach(date => {
+    const hrv = getMetricByDay(metrics, "heart_rate_variability")[date] || [];
+    const hr = getMetricByDay(metrics, "resting_heart_rate")[date] || [];
+    const sleep = metrics.find(m => m.name === "sleep_analysis")?.data?.find(e => e.date.slice(0, 10) === date);
+    const spo2 = getMetricByDay(metrics, "blood_oxygen_saturation")[date] || [];
+    const vo2 = getMetricByDay(metrics, "vo2_max")[date] || [];
+    const weight = getMetricByDay(metrics, "weight_body_mass")[date] || [];
+    const fat = getMetricByDay(metrics, "body_fat_percentage")[date] || [];
+    const steps = getMetricByDay(metrics, "step_count")[date] || [];
+    const cardioRecovery = getMetricByDay(metrics, "cardio_recovery")[date] || [];
+    const wristTemp = getMetricByDay(metrics, "apple_sleeping_wrist_temperature")[date] || [];
+
+    byDay[date] = {
+      date,
+      hrv: { avg: avgQty(hrv), last: lastQty(hrv) },
+      hrResting: { avg: avgQty(hr), last: lastQty(hr) },
+      sleep: sleep ? {
+        total: sleep.totalSleep,
+        deep: sleep.deep,
+        rem: sleep.rem,
+        core: sleep.core,
+        awake: sleep.awake,
+        start: sleep.sleepStart,
+        end: sleep.sleepEnd,
+      } : null,
+      spo2: { avg: avgQty(spo2), last: lastQty(spo2) },
+      vo2max: { avg: avgQty(vo2), last: lastQty(vo2) },
+      weight: { avg: avgQty(weight), last: lastQty(weight) },
+      fatPct: { avg: avgQty(fat), last: lastQty(fat) },
+      steps: { total: steps.reduce((s, e) => s + (e.qty || 0), 0) },
+      cardioRecovery: { avg: avgQty(cardioRecovery), last: lastQty(cardioRecovery) },
+      wristTemp: { avg: avgQty(wristTemp) },
+    };
+  });
+
   return byDay;
 }
 
@@ -41,25 +103,25 @@ export default async function handler(req, res) {
       req.on("error", reject);
     });
 
-    const csv = extractCSV(raw);
-    const byDay = splitByDay(csv);
-    const dates = Object.keys(byDay);
+    const jsonStr = extractJSON(raw);
+    const json = JSON.parse(jsonStr);
+    const byDay = splitByDay(json);
+    const dates = Object.keys(byDay).sort();
 
     const headers = { Authorization: `Bearer ${kvToken}`, "Content-Type": "application/json" };
 
     await Promise.all(dates.map(date => {
-      const dayCSV = byDay[date].join("\n");
-      const payload = JSON.stringify({ value: dayCSV });
       return fetch(`${kvUrl}/set/health:${date}`, {
-        method: "POST", headers, body: payload
+        method: "POST", headers,
+        body: JSON.stringify({ value: JSON.stringify(byDay[date]) }),
       });
     }));
 
-    const latest = dates.sort().pop();
+    const latest = dates[dates.length - 1];
     if (latest) {
       await fetch(`${kvUrl}/set/health:latest`, {
         method: "POST", headers,
-        body: JSON.stringify({ value: byDay[latest].join("\n") })
+        body: JSON.stringify({ value: JSON.stringify(byDay[latest]) }),
       });
     }
 
