@@ -64,6 +64,17 @@
     .badge { display: inline-block; font-size: 0.65rem; padding: 2px 8px; border-radius: 20px; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; margin-left: 8px; vertical-align: middle; }
     .badge.saved { background: #f0faf4; color: #16a34a; border-color: #86efac; }
     .divider { border: none; border-top: 1px solid #f0f0f0; margin: 1rem 0; }
+    .trend-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .trend-card { background: #f9f9f9; border-radius: 8px; padding: 0.6rem 0.75rem; }
+    .trend-label { font-size: 0.65rem; color: #888; margin-bottom: 6px; }
+    .trend-bars { display: flex; align-items: flex-end; gap: 3px; height: 40px; }
+    .trend-bar { flex: 1; border-radius: 3px 3px 0 0; min-height: 3px; transition: height 0.3s; }
+    .trend-bar.hrv { background: #3b82f6; }
+    .trend-bar.hr { background: #f87171; }
+    .trend-bar.sleep { background: #a78bfa; }
+    .trend-values { display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.6rem; color: #aaa; }
+    .trend-current { font-size: 1rem; font-weight: 500; margin-top: 4px; }
+    .trend-unit { font-size: 0.65rem; color: #888; margin-left: 2px; }
   </style>
 </head>
 <body>
@@ -81,6 +92,28 @@
       <label><input type="file" accept=".csv" id="csv-health" style="display:none" onchange="handleHealth(this)"><span class="btn" id="btn-health">Subir CSV</span></label>
     </div>
     <div id="health-stats"></div>
+    <div id="health-history" style="display:none">
+      <div class="trend-grid">
+        <div class="trend-card">
+          <div class="trend-label">HRV · 7 días</div>
+          <div class="trend-bars" id="hrv-bars"></div>
+          <div class="trend-values"><span id="hrv-min"></span><span id="hrv-max"></span></div>
+          <div class="trend-current"><span id="hrv-last">—</span><span class="trend-unit">ms</span></div>
+        </div>
+        <div class="trend-card">
+          <div class="trend-label">FC reposo · 7 días</div>
+          <div class="trend-bars" id="hr-bars"></div>
+          <div class="trend-values"><span id="hr-min"></span><span id="hr-max"></span></div>
+          <div class="trend-current"><span id="hr-last">—</span><span class="trend-unit">bpm</span></div>
+        </div>
+        <div class="trend-card">
+          <div class="trend-label">Sueño · 7 días</div>
+          <div class="trend-bars" id="sleep-bars"></div>
+          <div class="trend-values"><span id="sleep-min"></span><span id="sleep-max"></span></div>
+          <div class="trend-current"><span id="sleep-last">—</span><span class="trend-unit">h</span></div>
+        </div>
+      </div>
+    </div>
     <div class="error" id="err-health"></div>
   </div>
 
@@ -150,7 +183,7 @@ const WORKOUT_NAMES = {
 };
 const fixName = n => WORKOUT_NAMES[n] || n;
 
-let healthData = null, workoutsData = null;
+let healthData = null, workoutsData = null, historyData = [];
 let systemPrompt = null, chatHistory = [];
 let diasSel = [], feelingSel = "", goalSel = "";
 let savedPlan = null;
@@ -168,7 +201,71 @@ function initButtons() {
   GOALS.forEach(g => { const b = document.createElement("button"); b.className="day-btn"; b.textContent=g; b.onclick=()=>{ goalSel=g; gc.querySelectorAll("button").forEach(btn=>btn.classList.toggle("active",btn.textContent===g)); }; gc.appendChild(b); });
 }
 
-function parseDuration(str) {
+function extractMetric(csvText, colName) {
+  if (!csvText) return null;
+  const lines = csvText.trim().split("\n");
+  const headers = lines[0].split(",").map(h => h.trim().replace(/"/g, ""));
+  const idx = headers.indexOf(colName);
+  if (idx === -1) return null;
+  const vals = lines.slice(1).map(l => parseFloat(l.split(",")[idx])).filter(v => !isNaN(v) && v > 0);
+  return vals.length ? vals.reduce((s,v) => s+v, 0) / vals.length : null;
+}
+
+function renderHistory(history) {
+  if (!history || history.length === 0) return;
+  document.getElementById("health-history").style.display = "block";
+
+  const days = [...history].reverse();
+
+  const hrvVals = days.map(d => extractMetric(d.data, "Variabilidad de Frecuencia Cardíaca (ms)"));
+  const hrVals = days.map(d => extractMetric(d.data, "Frecuencia Cardiaca en Reposo (count/min)"));
+  const sleepVals = days.map(d => extractMetric(d.data, "Análisis del Sueño [Total] (hr)"));
+
+  renderBars("hrv-bars", hrvVals, "hrv");
+  renderBars("hr-bars", hrVals, "hr");
+  renderBars("sleep-bars", sleepVals, "sleep");
+
+  const lastValid = arr => [...arr].reverse().find(v => v != null);
+  const min = arr => { const f = arr.filter(v=>v!=null); return f.length ? Math.min(...f).toFixed(0) : "—"; };
+  const max = arr => { const f = arr.filter(v=>v!=null); return f.length ? Math.max(...f).toFixed(0) : "—"; };
+
+  document.getElementById("hrv-last").textContent = lastValid(hrvVals)?.toFixed(0) ?? "—";
+  document.getElementById("hr-last").textContent = lastValid(hrVals)?.toFixed(0) ?? "—";
+  document.getElementById("sleep-last").textContent = lastValid(sleepVals)?.toFixed(1) ?? "—";
+
+  document.getElementById("hrv-min").textContent = min(hrvVals);
+  document.getElementById("hrv-max").textContent = max(hrvVals);
+  document.getElementById("hr-min").textContent = min(hrVals);
+  document.getElementById("hr-max").textContent = max(hrVals);
+  document.getElementById("sleep-min").textContent = min(sleepVals);
+  document.getElementById("sleep-max").textContent = max(sleepVals);
+}
+
+function renderBars(containerId, vals, cls) {
+  const container = document.getElementById(containerId);
+  const filtered = vals.filter(v => v != null);
+  if (!filtered.length) return;
+  const min = Math.min(...filtered) * 0.85;
+  const max = Math.max(...filtered) * 1.05;
+  container.innerHTML = vals.map((v, i) => {
+    const pct = v != null ? Math.max(8, ((v - min) / (max - min)) * 100) : 4;
+    const date = historyData.length > 0 ? historyData[historyData.length - 1 - i]?.date?.slice(5) : "";
+    const opacity = v != null ? 1 : 0.2;
+    return `<div class="trend-bar ${cls}" style="height:${pct}%;opacity:${opacity}" title="${date}: ${v?.toFixed(1)??'—'}"></div>`;
+  }).join("");
+}
+
+function buildHistorySummary() {
+  if (!historyData.length) return "";
+  const days = [...historyData].reverse();
+  const lines = days.map(d => {
+    const hrv = extractMetric(d.data, "Variabilidad de Frecuencia Cardíaca (ms)");
+    const hr = extractMetric(d.data, "Frecuencia Cardiaca en Reposo (count/min)");
+    const sleep = extractMetric(d.data, "Análisis del Sueño [Total] (hr)");
+    return `- ${d.date}: HRV ${hrv?.toFixed(0)??'—'}ms | FC reposo ${hr?.toFixed(0)??'—'}bpm | Sueño ${sleep?.toFixed(1)??'—'}h`;
+  }).join("\n");
+  return `\nHISTÓRICO 7 DÍAS:\n${lines}`;
+}
   if (!str) return 0;
   const p = str.split(":").map(Number);
   if (p.length === 3) return p[0]*3600 + p[1]*60 + p[2];
@@ -301,6 +398,11 @@ async function loadFromServer() {
       renderPlan(planData);
       loaded.push("plan");
     }
+    if (data.history?.length) {
+      historyData = data.history;
+      renderHistory(data.history);
+      if (!loaded.includes("salud")) loaded.push("histórico");
+    }
 
     msg.textContent = loaded.length > 0 ? "✓ Cargado: " + loaded.join(", ") : "No hay datos nuevos aún";
     msg.className = "server-msg " + (loaded.length > 0 ? "ok" : "err");
@@ -336,7 +438,7 @@ function buildContext() {
 - Peso: ${healthData?.weight.last??'—'} kg | Grasa: ${healthData?.fatPct.last??'—'}%
 - Sueño: ${healthData?.sleep.total??'—'}h total | ${healthData?.sleep.deep??'—'}h profundo | ${healthData?.sleep.rem??'—'}h REM
 - Recuperación cardio: ${healthData?.cardioRecovery.last??'—'} bpm
-
+${buildHistorySummary()}
 ENTRENOS RECIENTES:
 ${acts}
 
