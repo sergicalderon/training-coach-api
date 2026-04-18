@@ -13,17 +13,26 @@ export default async function handler(req, res) {
     const { plan, context } = req.body;
     if (!plan) return res.status(400).json({ error: "Plan requerido" });
 
+    const now = new Date();
     const data = {
       plan,
       context: context || {},
-      savedAt: new Date().toISOString(),
+      savedAt: now.toISOString(),
       weekStart: getMonday(),
     };
 
-    await fetch(`${kvUrl}/set/plan:current`, {
+    const payload = JSON.stringify({ value: JSON.stringify(data) });
+    const headers = { Authorization: `Bearer ${kvToken}`, "Content-Type": "application/json" };
+
+    await Promise.all([
+      fetch(`${kvUrl}/set/plan:current`, { method: "POST", headers, body: payload }),
+      fetch(`${kvUrl}/set/plan:${now.toISOString().slice(0, 10)}`, { method: "POST", headers, body: payload }),
+    ]);
+
+    await fetch(`${kvUrl}/lpush/plan:history`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${kvToken}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ value: JSON.stringify(data) }),
+      headers,
+      body: JSON.stringify({ value: now.toISOString().slice(0, 10) }),
     });
 
     res.status(200).json({ ok: true, savedAt: data.savedAt });
