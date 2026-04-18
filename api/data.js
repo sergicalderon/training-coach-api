@@ -17,8 +17,11 @@ export default async function handler(req, res) {
     try {
       const p = JSON.parse(j.result);
       const val = p?.value ?? p;
-      return typeof val === "string" ? JSON.parse(val) : val;
-    } catch { return null; }
+      if (typeof val === "string") {
+        try { return JSON.parse(val); } catch { return val; }
+      }
+      return val;
+    } catch { return j.result; }
   };
 
   try {
